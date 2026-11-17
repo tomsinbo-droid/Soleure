@@ -67,6 +67,7 @@ class StaffViewModel {
     String name,
     String email,
     String phone,
+    String password,
     String role,
     int hourlyRate,
   ) async {
@@ -74,6 +75,7 @@ class StaffViewModel {
       name: name,
       email: email,
       phone: phone,
+      password: password,
       role: role,
       hourlyRate: hourlyRate,
     );

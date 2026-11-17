@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import '../core/constants/firebase_collections.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -127,12 +125,14 @@ class StaffService {
     required String name,
     required String email,
     required String phone,
+    required String password,
     required String role,
     required int hourlyRate,
   }) async {
     final normalizedEmail = email.trim().toLowerCase();
     if (name.trim().isEmpty ||
         !_isValidEmail(normalizedEmail) ||
+        password.length < 6 ||
         !_isManagedRole(role) ||
         hourlyRate < 0) {
       throw StateError('Thông tin tài khoản chưa hợp lệ.');
@@ -149,7 +149,7 @@ class StaffService {
     try {
       credential = await secondaryAuth.createUserWithEmailAndPassword(
         email: normalizedEmail,
-        password: _temporaryPassword(),
+        password: password,
       );
       final uid = credential.user?.uid;
       if (uid == null) throw StateError('Không tạo được mã tài khoản.');
@@ -165,9 +165,6 @@ class StaffService {
         'updatedAt': FieldValue.serverTimestamp(),
       });
       profileCreated = true;
-      await FirebaseAuth.instance.sendPasswordResetEmail(
-        email: normalizedEmail,
-      );
     } on FirebaseAuthException catch (error) {
       if (!profileCreated && credential != null) {
         await credential.user?.delete();
@@ -190,11 +187,4 @@ class StaffService {
 
   bool _isValidEmail(String email) =>
       RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email);
-
-  String _temporaryPassword() {
-    const chars =
-        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#%';
-    final random = Random.secure();
-    return '${List.generate(28, (_) => chars[random.nextInt(chars.length)]).join()}Aa1!';
-  }
 }

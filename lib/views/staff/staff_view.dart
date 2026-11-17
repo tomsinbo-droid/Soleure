@@ -41,6 +41,7 @@ class _StaffViewState extends State<StaffView> {
     String name = '',
         email = '',
         phone = '',
+        password = '',
         hourly = '${AppDefaults.hourlyRateDefault}';
     final accepted = await showDialog<bool>(
       context: context,
@@ -67,6 +68,14 @@ class _StaffViewState extends State<StaffView> {
                 decoration: const InputDecoration(labelText: 'Số điện thoại'),
                 onChanged: (v) => phone = v,
               ),
+              if (widget.role == UserRole.admin)
+                TextField(
+                  obscureText: true,
+                  enableSuggestions: false,
+                  autocorrect: false,
+                  decoration: const InputDecoration(labelText: 'Mật khẩu'),
+                  onChanged: (v) => password = v,
+                ),
               TextFormField(
                 initialValue: hourly,
                 decoration: const InputDecoration(labelText: 'Lương giờ (VND)'),
@@ -96,14 +105,14 @@ class _StaffViewState extends State<StaffView> {
     }
     try {
       if (widget.role == UserRole.admin) {
-        await _vm.createAccount(name, email, phone, 'staff', amount);
+        await _vm.createAccount(name, email, phone, password, 'staff', amount);
       } else {
         await _vm.propose(name, email, phone, amount);
       }
       if (mounted) setState(() {});
       _message(
         widget.role == UserRole.admin
-            ? 'Đã tạo Staff. Thiết lập mật khẩu qua email Quên mật khẩu.'
+            ? 'Đã tạo tài khoản Staff.'
             : 'Đã gửi đề xuất. Admin duyệt trước khi Staff đặt mật khẩu.',
       );
     } catch (error) {
@@ -146,6 +155,7 @@ class _StaffViewState extends State<StaffView> {
     String name = '',
         email = '',
         phone = '',
+        password = '',
         hourly = '${AppDefaults.hourlyRateDefault}';
     final confirmed = await showDialog<bool>(
       context: context,
@@ -167,6 +177,13 @@ class _StaffViewState extends State<StaffView> {
               TextField(
                 decoration: const InputDecoration(labelText: 'Điện thoại'),
                 onChanged: (v) => phone = v,
+              ),
+              TextField(
+                obscureText: true,
+                enableSuggestions: false,
+                autocorrect: false,
+                decoration: const InputDecoration(labelText: 'Mật khẩu'),
+                onChanged: (v) => password = v,
               ),
               TextFormField(
                 initialValue: hourly,
@@ -196,9 +213,9 @@ class _StaffViewState extends State<StaffView> {
       return;
     }
     try {
-      await _vm.createAccount(name, email, phone, 'manager', rate);
+      await _vm.createAccount(name, email, phone, password, 'manager', rate);
       if (mounted) setState(() {});
-      _message('Đã tạo Manager; đặt mật khẩu qua email Quên mật khẩu.');
+      _message('Đã tạo tài khoản Manager.');
     } catch (error) {
       _message('Không thể tạo Manager: $error');
     }
