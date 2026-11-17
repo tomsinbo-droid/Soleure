@@ -1,5 +1,7 @@
 import '../core/constants/firebase_collections.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 
 import '../models/user_profile.dart';
 import '../models/user_role.dart';
@@ -8,6 +10,7 @@ import 'auth_service.dart';
 /// Firebase - nghiệp vụ staff
 class StaffService {
   late final FirebaseFirestore _db = FirebaseFirestore.instance;
+  late final FirebaseFunctions _functions = FirebaseFunctions.instance;
   final AuthService _authService = AuthService();
   Future<Map<String, dynamic>?> getMyProfile() async {
     final uid = _authService.currentUid;
@@ -84,8 +87,6 @@ class StaffService {
         .toList();
   }
 
-  /// Admin SDK required: Firebase Auth user management is not a client API.
-  /// A request is created for offline execution by a privileged local script.
   Future<void> updateAccount({
     required String uid,
     required String name,
@@ -94,9 +95,14 @@ class StaffService {
     required int hourlyRate,
     required bool active,
   }) async {
-    throw StateError(
-      'Không chỉnh role/khóa Auth từ Flutter. Dùng Admin SDK script quản trị tài khoản DEV.',
-    );
+    await _functions.httpsCallable('updateStaffAccount').call({
+      'uid': uid,
+      'name': name.trim(),
+      'phone': phone.trim(),
+      'role': role,
+      'hourlyRate': hourlyRate,
+      'active': active,
+    });
   }
 
   Future<void> createAccount({
@@ -106,8 +112,22 @@ class StaffService {
     required String role,
     required int hourlyRate,
   }) async {
-    throw StateError(
-      'Không thể tạo Auth từ Flutter. Dùng script seed/admin trên máy developer để tạo tài khoản.',
-    );
+    final result = await _functions.httpsCallable('createStaffAccount').call({
+      'name': name.trim(),
+      'email': email.trim().toLowerCase(),
+      'phone': phone.trim(),
+      'role': role,
+      'hourlyRate': hourlyRate,
+    });
+
+    final createdEmail = (result.data as Map?)?['email']?.toString() ?? email;
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: createdEmail);
+    } on FirebaseAuthException catch (error) {
+      throw StateError(
+        'Tài khoản đã tạo, nhưng không gửi được email đặt mật khẩu: '
+        '${error.message ?? error.code}',
+      );
+    }
   }
 }

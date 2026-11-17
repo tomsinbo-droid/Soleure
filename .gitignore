@@ -53,5 +53,6 @@ functions/scripts/.seed-credentials.*.json
 **/*adminsdk*.json
 **/.seed-credentials.*.json
 scripts/firebase/node_modules/
+functions/node_modules/
 .firebase/
 .emulator-data/
