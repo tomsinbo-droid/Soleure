@@ -18,13 +18,43 @@ service cloud.firestore {
     function admin() { return staff() && profile().role == 'admin'; }
     function own(uid) { return staff() && uid == request.auth.uid; }
     function newNow() { return request.resource.data.createdAt == request.time; }
+    function managedRole(role) { return role in ['manager', 'staff']; }
 
     match /users/{uid} {
       allow get: if signed() && (uid == request.auth.uid || admin() ||
         (manager() && resource.data.role == 'staff'));
       allow list: if admin() || (manager() && resource.data.role == 'staff');
-      // User + role + hourlyRate chỉ được cấp bởi Admin SDK/Firebase Console.
-      allow create, update, delete: if false;
+      // Admin tạo/quản lý Staff và Manager; không thể tạo/sửa Admin từ client.
+      allow create: if admin()
+        && uid == request.resource.data.uid
+        && request.resource.data.keys().hasOnly([
+          'uid','displayName','email','phone','role','hourlyRate','active',
+          'createdAt','updatedAt'])
+        && request.resource.data.keys().hasAll([
+          'uid','displayName','email','phone','role','hourlyRate','active',
+          'createdAt','updatedAt'])
+        && request.resource.data.displayName is string
+        && request.resource.data.email is string
+        && request.resource.data.phone is string
+        && managedRole(request.resource.data.role)
+        && request.resource.data.hourlyRate is int
+        && request.resource.data.hourlyRate >= 0
+        && request.resource.data.hourlyRate <= 1000000
+        && request.resource.data.active is bool
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+      allow update: if admin() && managedRole(resource.data.role)
+        && managedRole(request.resource.data.role)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'displayName','phone','role','hourlyRate','active','updatedAt'])
+        && request.resource.data.displayName is string
+        && request.resource.data.phone is string
+        && request.resource.data.hourlyRate is int
+        && request.resource.data.hourlyRate >= 0
+        && request.resource.data.hourlyRate <= 1000000
+        && request.resource.data.active is bool
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if false;
     }
 
     match /products/{sku} {

@@ -17,11 +17,16 @@ service cloud.firestore {
     function admin() { return staff() && profile().role == 'admin'; }
     function own(field) { return staff() && resource.data.get(field, '') == request.auth.uid; }
     function demo() { return request.resource.data.get('isDemo', false) == true; }
+    function managedRole(role) { return role in ['manager', 'staff']; }
 
     match /users/{uid} {
       allow read: if staff() && (uid == request.auth.uid || admin() ||
         (manager() && resource.data.role == 'staff'));
-      allow write: if false; // Only Admin SDK can grant role.
+      allow create: if admin() && uid == request.resource.data.uid
+        && managedRole(request.resource.data.role);
+      allow update: if admin() && managedRole(resource.data.role)
+        && managedRole(request.resource.data.role);
+      allow delete: if false;
     }
     match /products/{id} {
       allow read: if staff();

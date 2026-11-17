@@ -1,8 +1,11 @@
+import 'dart:math';
+
 import '../core/constants/firebase_collections.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_core/firebase_core.dart';
 
+import '../firebase_options.dart';
 import '../models/user_profile.dart';
 import '../models/user_role.dart';
 import 'auth_service.dart';
@@ -10,8 +13,20 @@ import 'auth_service.dart';
 /// Firebase - nghiệp vụ staff
 class StaffService {
   late final FirebaseFirestore _db = FirebaseFirestore.instance;
-  late final FirebaseFunctions _functions = FirebaseFunctions.instance;
   final AuthService _authService = AuthService();
+
+  Future<FirebaseApp> _provisioningApp() async {
+    const name = 'staff-account-provisioning';
+    try {
+      return Firebase.app(name);
+    } on FirebaseException {
+      return Firebase.initializeApp(
+        name: name,
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    }
+  }
+
   Future<Map<String, dynamic>?> getMyProfile() async {
     final uid = _authService.currentUid;
     if (uid == null) return null;
@@ -95,13 +110,16 @@ class StaffService {
     required int hourlyRate,
     required bool active,
   }) async {
-    await _functions.httpsCallable('updateStaffAccount').call({
-      'uid': uid,
-      'name': name.trim(),
+    if (!_isManagedRole(role) || name.trim().isEmpty || hourlyRate < 0) {
+      throw StateError('Dữ liệu tài khoản chưa hợp lệ.');
+    }
+    await _db.collection(FirebaseCollections.users).doc(uid).update({
+      'displayName': name.trim(),
       'phone': phone.trim(),
       'role': role,
       'hourlyRate': hourlyRate,
       'active': active,
+      'updatedAt': FieldValue.serverTimestamp(),
     });
   }
 
@@ -112,22 +130,71 @@ class StaffService {
     required String role,
     required int hourlyRate,
   }) async {
-    final result = await _functions.httpsCallable('createStaffAccount').call({
-      'name': name.trim(),
-      'email': email.trim().toLowerCase(),
-      'phone': phone.trim(),
-      'role': role,
-      'hourlyRate': hourlyRate,
-    });
+    final normalizedEmail = email.trim().toLowerCase();
+    if (name.trim().isEmpty ||
+        !_isValidEmail(normalizedEmail) ||
+        !_isManagedRole(role) ||
+        hourlyRate < 0) {
+      throw StateError('Thông tin tài khoản chưa hợp lệ.');
+    }
 
-    final createdEmail = (result.data as Map?)?['email']?.toString() ?? email;
+    final secondaryAuth = FirebaseAuth.instanceFor(
+      app: await _provisioningApp(),
+    );
+    if (const bool.fromEnvironment('SOLEURE_FIRESTORE_EMULATOR')) {
+      secondaryAuth.useAuthEmulator('127.0.0.1', 9099);
+    }
+    UserCredential? credential;
+    var profileCreated = false;
     try {
-      await FirebaseAuth.instance.sendPasswordResetEmail(email: createdEmail);
+      credential = await secondaryAuth.createUserWithEmailAndPassword(
+        email: normalizedEmail,
+        password: _temporaryPassword(),
+      );
+      final uid = credential.user?.uid;
+      if (uid == null) throw StateError('Không tạo được mã tài khoản.');
+      await _db.collection(FirebaseCollections.users).doc(uid).set({
+        'uid': uid,
+        'displayName': name.trim(),
+        'email': normalizedEmail,
+        'phone': phone.trim(),
+        'role': role,
+        'hourlyRate': hourlyRate,
+        'active': true,
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      profileCreated = true;
+      await FirebaseAuth.instance.sendPasswordResetEmail(
+        email: normalizedEmail,
+      );
     } on FirebaseAuthException catch (error) {
+      if (!profileCreated && credential != null) {
+        await credential.user?.delete();
+      }
       throw StateError(
-        'Tài khoản đã tạo, nhưng không gửi được email đặt mật khẩu: '
+        '${profileCreated ? 'Tài khoản đã tạo nhưng không gửi được email đặt mật khẩu: ' : 'Không thể tạo tài khoản: '}'
         '${error.message ?? error.code}',
       );
+    } catch (_) {
+      if (!profileCreated && credential != null) {
+        await credential.user?.delete();
+      }
+      rethrow;
+    } finally {
+      await secondaryAuth.signOut();
     }
+  }
+
+  bool _isManagedRole(String role) => role == 'manager' || role == 'staff';
+
+  bool _isValidEmail(String email) =>
+      RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email);
+
+  String _temporaryPassword() {
+    const chars =
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#%';
+    final random = Random.secure();
+    return '${List.generate(28, (_) => chars[random.nextInt(chars.length)]).join()}Aa1!';
   }
 }

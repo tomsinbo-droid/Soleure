@@ -27,17 +27,12 @@
 
 ## Tạo tài khoản Staff / Manager
 
-Nút tạo tài khoản gọi Callable Cloud Functions (`createStaffAccount`) để
-Firebase Admin SDK tạo đồng thời Firebase Authentication và `users/{uid}`.
-Điều này giữ role, lương và trạng thái khóa ngoài quyền của Flutter client.
-
-1. Cài dependencies: `cd functions; npm install`.
-2. Khi chạy local, Emulator Suite sẽ tự nạp Functions ở cổng `5001`.
-3. Khi dùng Firebase DEV thật, deploy: `firebase deploy --only functions`.
-
-Admin đang hoạt động mới có thể tạo hoặc chỉnh sửa Staff/Manager. Sau khi tạo,
-app gửi email đặt lại mật khẩu để người dùng tự đặt mật khẩu lần đầu. Hãy bật
-Email/Password trong Firebase Authentication và cấu hình mẫu email reset.
+Luồng này chỉ dùng Firebase Authentication và Firestore, không dùng Cloud
+Functions. App dùng Firebase Auth app phụ để tạo user mới mà không làm đăng
+xuất Admin hiện tại, rồi Admin ghi hồ sơ `users/{uid}` theo Firestore Rules.
+Sau khi tạo, app gửi email đặt lại mật khẩu để người dùng tự đặt mật khẩu lần
+đầu. Hãy bật Email/Password trong Firebase Authentication và cấu hình mẫu
+email reset.
 
 ## Not implemented as live cloud operations
 
