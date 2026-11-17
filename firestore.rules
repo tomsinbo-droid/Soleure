@@ -1,0 +1,323 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signed() { return request.auth != null; }
+    function hasProfile() {
+      return signed() && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+    function profile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    function staff() {
+      return hasProfile() && profile().role in ['admin', 'manager', 'staff']
+        && profile().get('active', true) == true;
+    }
+    function manager() {
+      return staff() && profile().role in ['admin', 'manager'];
+    }
+    function admin() { return staff() && profile().role == 'admin'; }
+    function own(uid) { return staff() && uid == request.auth.uid; }
+    function newNow() { return request.resource.data.createdAt == request.time; }
+
+    match /users/{uid} {
+      allow get: if signed() && (uid == request.auth.uid || admin() ||
+        (manager() && resource.data.role == 'staff'));
+      allow list: if admin() || (manager() && resource.data.role == 'staff');
+      // User + role + hourlyRate chỉ được cấp bởi Admin SDK/Firebase Console.
+      allow create, update, delete: if false;
+    }
+
+    match /products/{sku} {
+      allow read: if staff();
+      // Firebase Spark mode: Manager/Admin quản lý dữ liệu sản phẩm trực tiếp.
+      // Ảnh được lưu Base64 trong imageBase64/imageMime.
+      allow create: if manager() && request.resource.data.get('stock', -1) == 0
+        && request.resource.data.get('heldStock', 0) == 0
+        && request.resource.data.get('cost', -1) == 0;
+      allow update: if (manager() && request.resource.data.diff(resource.data)
+          .affectedKeys().hasOnly(['name','brand','series','location','price',
+            'kpiEligible','promoPercent','imageBase64','imageMime','updatedAt',
+            'stock','heldStock','cost']))
+        || (staff() && request.resource.data.diff(resource.data)
+          .affectedKeys().hasOnly(['stock','heldStock']));
+      allow delete: if false;
+    }
+
+    match /customers/{customerId} {
+      allow read: if staff();
+      allow create: if staff()
+        && request.resource.data.keys().hasOnly(['name','phone','totalSpend','favorite','lastPurchase'])
+        && request.resource.data.keys().hasAll(['name','phone','totalSpend','favorite','lastPurchase'])
+        && request.resource.data.name is string
+        && request.resource.data.phone is string
+        && request.resource.data.favorite is string
+        && request.resource.data.totalSpend == 0
+        && request.resource.data.lastPurchase == '-';
+      allow update: if (manager()
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['name','phone','favorite'])
+          && request.resource.data.name is string
+          && request.resource.data.phone is string)
+        || (staff() && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['totalSpend','lastPurchase']));
+      allow delete: if false;
+    }
+
+    match /order_drafts/{id} {
+      allow create: if staff()
+        && request.resource.data.keys().hasOnly([
+          'staffUid','customerId','status','createdAt','items','totalPreview'])
+        && request.resource.data.staffUid == request.auth.uid
+        && request.resource.data.status == 'draft'
+        && newNow()
+        && request.resource.data.items is list
+        && request.resource.data.items.size() > 0
+        && request.resource.data.items.size() <= 50
+        && request.resource.data.totalPreview is number;
+      allow read: if staff() && (manager() || resource.data.staffUid == request.auth.uid);
+      allow update, delete: if false;
+    }
+
+    match /holds/{id} {
+      allow read: if staff();
+      allow create: if staff() && request.resource.data.staffUid == request.auth.uid;
+      allow update: if manager() || (staff() && resource.data.staffUid == request.auth.uid);
+      allow delete: if false;
+    }
+    match /orders/{id} {
+      // Staff can see their own orders in every state and all paid bills for
+      // the return workflow. A missing document has no data to disclose.
+      allow get: if staff() && (!exists(/databases/$(database)/documents/orders/$(id))
+        || manager() || resource.data.staffUid == request.auth.uid
+        || resource.data.status == 'Paid');
+      allow list: if staff() && (manager() || resource.data.staffUid == request.auth.uid
+        || resource.data.status == 'Paid');
+      allow create: if staff() && request.resource.data.staffUid == request.auth.uid;
+      allow update: if manager() || (staff() && resource.data.staffUid == request.auth.uid);
+      allow delete: if false;
+    }
+    match /bank_transaction_refs/{id} { allow read, write: if false; }
+    match /bank_refund_refs/{id} { allow read, write: if false; }
+    match /commission_events/{id} {
+      allow read: if staff() && (manager() || resource.data.staffUid == request.auth.uid);
+      allow create: if staff() && request.resource.data.staffUid == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    match /return_requests/{id} {
+      allow create: if staff() && request.resource.data.staffUid == request.auth.uid;
+      allow get: if staff() && (!exists(/databases/$(database)/documents/return_requests/$(id))
+        || manager() || resource.data.staffUid == request.auth.uid);
+      allow list: if staff() && (manager() || resource.data.staffUid == request.auth.uid);
+      allow update: if manager();
+      allow delete: if false;
+    }
+
+    match /damage_reports/{id} {
+      allow read: if manager();
+      allow create: if manager()
+        && request.resource.data.keys().hasOnly([
+          'sku','reason','quantity','loss','status','reportedBy','createdAt'])
+        && request.resource.data.sku is string
+        && request.resource.data.reason is string
+        && request.resource.data.quantity is int
+        && request.resource.data.quantity > 0
+        && request.resource.data.loss is int && request.resource.data.loss >= 0
+        && request.resource.data.status == 'Pending'
+        && request.resource.data.reportedBy == request.auth.uid && newNow();
+      allow update: if manager() && resource.data.status == 'Pending'
+        && request.resource.data.get('imageBase64', '') is string
+        && request.resource.data.get('imageBase64', '').size() <= 810000;
+      allow delete: if false;
+    }
+
+    match /staff_requests/{id} {
+      allow read: if manager();
+      allow create: if manager()
+        && request.resource.data.keys().hasOnly([
+          'name','email','phone','hourlyRate','requestedBy','status','createdAt'])
+        && request.resource.data.name is string
+        && request.resource.data.email is string
+        && request.resource.data.phone is string
+        && request.resource.data.hourlyRate is int
+        && request.resource.data.hourlyRate >= 0
+        && request.resource.data.hourlyRate <= 1000000
+        && request.resource.data.requestedBy == request.auth.uid
+        && request.resource.data.status == 'Pending' && newNow();
+      allow update: if admin() && resource.data.status == 'Pending'
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status','reviewedBy','reviewedAt'])
+        && request.resource.data.status in ['Approved','Rejected']
+        && request.resource.data.reviewedBy == request.auth.uid
+        && request.resource.data.reviewedAt == request.time;
+      allow delete: if false;
+    }
+
+    match /shifts/{id} {
+      allow read: if staff() && (manager() || resource.data.staffUid == request.auth.uid);
+      allow create: if staff() && request.resource.data.staffUid == request.auth.uid;
+      allow update: if manager();
+      allow delete: if false;
+    }
+
+    match /shift_swaps/{id} {
+      allow read: if staff() && (manager() || resource.data.requesterUid == request.auth.uid
+        || resource.data.replacementUid == request.auth.uid);
+      allow create: if staff() && request.resource.data.requesterUid == request.auth.uid;
+      allow update: if manager() || (staff() &&
+        (resource.data.requesterUid == request.auth.uid ||
+          resource.data.replacementUid == request.auth.uid));
+      allow delete: if false;
+    }
+
+    match /staff_account_audit/{id} {
+      allow read: if admin();
+      allow create: if own(request.resource.data.staffUid);
+      allow update: if manager() || own(resource.data.staffUid);
+      allow delete: if false;
+    }
+
+    match /attendance/{id} {
+      allow read: if staff() && (manager() || resource.data.staffUid == request.auth.uid);
+      allow write: if false;
+    }
+
+    match /promotion_proposals/{id} {
+      allow read: if manager() || (staff() && resource.data.status == 'Approved');
+      allow create: if manager()
+        && request.resource.data.keys().hasOnly([
+          'name','scope','discount','startAt','endAt','proposerUid','status','createdAt'])
+        && request.resource.data.name is string
+        && request.resource.data.scope is string
+        && request.resource.data.discount is int
+        && request.resource.data.discount >= 1 && request.resource.data.discount <= 100
+        && request.resource.data.startAt is timestamp
+        && request.resource.data.endAt is timestamp
+        && request.resource.data.endAt >= request.resource.data.startAt
+        && request.resource.data.proposerUid == request.auth.uid
+        && request.resource.data.status == 'Pending' && newNow();
+      allow update: if admin() && resource.data.status == 'Pending'
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status','reviewedBy','reviewedAt'])
+        && request.resource.data.status in ['Approved','Rejected']
+        && request.resource.data.reviewedBy == request.auth.uid
+        && request.resource.data.reviewedAt == request.time;
+      allow delete: if false;
+    }
+
+    match /system_settings/{id} {
+      allow read: if staff() && id == 'store';
+      allow create, update: if admin() && id == 'store'
+        && request.resource.data.keys().hasOnly([
+          'commissionRate','holdMinutes','hourlyRateDefault','maxWeeklyHours'])
+        && request.resource.data.keys().hasAll([
+          'commissionRate','holdMinutes','hourlyRateDefault','maxWeeklyHours'])
+        && request.resource.data.commissionRate is number
+        && request.resource.data.commissionRate >= 0
+        && request.resource.data.commissionRate <= 0.2
+        && request.resource.data.holdMinutes is int
+        && request.resource.data.holdMinutes >= 1
+        && request.resource.data.holdMinutes <= 120
+        && request.resource.data.hourlyRateDefault is int
+        && request.resource.data.hourlyRateDefault >= 0
+        && request.resource.data.maxWeeklyHours is int
+        && request.resource.data.maxWeeklyHours >= 1
+        && request.resource.data.maxWeeklyHours <= 80;
+      allow delete: if false;
+    }
+
+    match /stock_movements/{id} {
+      allow read: if manager();
+      allow create: if staff() && request.resource.data.createdBy == request.auth.uid;
+      allow update, delete: if false;
+    }
+    match /attendance_corrections/{id} {
+      allow read: if manager() || (staff() && resource.data.staffUid == request.auth.uid);
+      allow create: if own(request.resource.data.staffUid);
+      allow update: if manager();
+      allow delete: if false;
+    }
+    match /product_changes/{id} {
+      allow read: if manager();
+      allow create: if manager() && request.resource.data.createdBy == request.auth.uid;
+      allow update: if admin();
+      allow delete: if false;
+    }
+    match /payroll_adjustments/{id} {
+      allow read: if manager() || (staff() && resource.data.staffUid == request.auth.uid);
+      allow create: if admin() && request.resource.data.closedBy == request.auth.uid;
+      allow update, delete: if false;
+    }
+    match /payroll_periods/{period} {
+      allow read: if manager();
+      allow create: if admin();
+      allow update, delete: if false;
+    }
+    match /payroll_records/{id} {
+      allow read: if manager() || (staff() && resource.data.uid == request.auth.uid);
+      allow write: if false;
+    }
+
+    // Sprint 6: inbox riêng từng người, chỉ Cloud Functions được ghi.
+    match /notifications/{id} {
+      allow read: if staff() && resource.data.recipientUid == request.auth.uid;
+      allow update: if staff() && resource.data.recipientUid == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readAt']);
+      allow create, delete: if false;
+    }
+
+    match /expenses/{id} {
+      allow read: if admin();
+      allow create: if admin()
+        && request.resource.data.keys().hasOnly([
+          'name','category','amount','createdBy','createdAt'])
+        && request.resource.data.name is string
+        && request.resource.data.category in ['Định phí','Biến phí','Thuế']
+        && request.resource.data.amount is int
+        && request.resource.data.amount >= 0
+        && request.resource.data.createdBy == request.auth.uid && newNow();
+      allow update, delete: if false;
+    }
+
+    match /suppliers/{id} {
+      allow read: if manager();
+      allow create: if manager() && request.resource.data.get('active', false) == true
+        && request.resource.data.get('name', '') is string;
+      allow update: if manager() && request.resource.data.diff(resource.data)
+        .affectedKeys().hasOnly(['active']) && request.resource.data.active == false;
+      allow delete: if false;
+    }
+    match /purchase_receipts/{id} {
+      allow read: if manager();
+      allow create: if manager() && request.resource.data.status == 'Pending'
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.lines is list
+        && request.resource.data.lines.size() > 0
+        && request.resource.data.lines.size() <= 30;
+      allow update: if admin();
+      allow delete: if false;
+    }
+    match /stocktakes/{id} {
+      allow read: if manager();
+      allow create: if manager() && request.resource.data.status == 'Pending'
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.lines is list
+        && request.resource.data.lines.size() > 0
+        && request.resource.data.lines.size() <= 30;
+      allow update: if admin();
+      allow delete: if false;
+    }
+    match /inventory_units/{id} {
+      allow read: if staff();
+      allow create: if manager();
+      allow update: if staff();
+      allow delete: if false;
+    }
+    match /shift_schedule/{uid} {
+      allow read, write: if own(uid) || manager();
+    }
+    match /inventory_unit_codes/{id} { allow read, write: if false; }
+
+    match /{document=**} { allow read, write: if false; }
+  }
+}

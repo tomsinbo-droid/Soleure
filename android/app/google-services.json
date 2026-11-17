@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "133708453802",
+    "project_id": "soleure-c1554",
+    "storage_bucket": "soleure-c1554.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:133708453802:android:17622f5d2ed30c6c14bdd3",
+        "android_client_info": {
+          "package_name": "com.example.app_project"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBoFpJZjLkGtQizCUeaAGL1e6HSJtD7F2w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,13 @@
+{
+  "name": "soleure-intern-firestore-seed",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Firebase Admin seed for isolated Soléure intern DEV or emulator",
+  "scripts": {
+    "seed:preview": "node seed_firestore.js --project soleure-demo-local --dry-run --with-users",
+    "check": "node --check seed_data.js && node --check seed_firestore.js && node --check cleanup_demo.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.5.0"
+  }
+}

@@ -1,0 +1,175 @@
+rules_version = '2';
+// NEVER DEPLOY TO SHARED FIREBASE: Local Emulator ONLY.
+// These checks prevent accidental misuse by the UI, but a malicious client
+// can still forge multi-document finance, inventory or attendance writes.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signed() { return request.auth != null; }
+    function profile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    function active() {
+      return signed() && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && profile().get('active', true) == true;
+    }
+    function staff() { return active() && profile().role in ['admin','manager','staff']; }
+    function manager() { return staff() && profile().role in ['admin','manager']; }
+    function admin() { return staff() && profile().role == 'admin'; }
+    function own(field) { return staff() && resource.data.get(field, '') == request.auth.uid; }
+    function demo() { return request.resource.data.get('isDemo', false) == true; }
+
+    match /users/{uid} {
+      allow read: if staff() && (uid == request.auth.uid || admin() ||
+        (manager() && resource.data.role == 'staff'));
+      allow write: if false; // Only Admin SDK can grant role.
+    }
+    match /products/{id} {
+      allow read: if staff();
+      allow create: if manager();
+      allow update: if staff()
+        && request.resource.data.get('stock', -1) is int
+        && request.resource.data.get('heldStock', -1) is int
+        && request.resource.data.stock >= 0
+        && request.resource.data.heldStock >= 0
+        && request.resource.data.heldStock <= request.resource.data.stock
+        && (manager() || request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['stock','heldStock']));
+      allow delete: if false;
+    }
+    match /customers/{id} {
+      allow read: if staff();
+      allow create: if staff();
+      allow update: if staff() && (manager() || request.resource.data.diff(resource.data)
+        .affectedKeys().hasOnly(['totalSpend','lastPurchase']));
+      allow delete: if false;
+    }
+    match /order_drafts/{id} {
+      allow create: if staff() && request.resource.data.staffUid == request.auth.uid;
+      allow read: if staff() && (manager() || own('staffUid'));
+      allow update, delete: if false;
+    }
+    match /orders/{id} {
+      allow get: if staff(); // required to check absent idempotency document
+      allow list: if staff() && (manager() || resource.data.staffUid == request.auth.uid);
+      allow create: if staff() && demo() && request.resource.data.staffUid == request.auth.uid;
+      allow update: if resource.data.isDemo == true && staff() &&
+        (manager() || (resource.data.staffUid == request.auth.uid &&
+          resource.data.status == 'PendingQr' &&
+          request.resource.data.status in ['Expired','Cancelled']));
+      allow delete: if false;
+    }
+    match /holds/{id} {
+      allow read: if staff();
+      allow create: if staff() && demo() && request.resource.data.staffUid == request.auth.uid;
+      allow update: if manager() || own('staffUid');
+      allow delete: if false;
+    }
+    match /commission_events/{id} {
+      allow get: if staff();
+      allow list: if manager() || (staff() && resource.data.staffUid == request.auth.uid);
+      allow create: if staff() && demo() && (manager() || request.resource.data.staffUid == request.auth.uid);
+      allow update, delete: if false;
+    }
+    match /return_requests/{id} {
+      allow get: if staff();
+      allow list: if manager() || (staff() && resource.data.staffUid == request.auth.uid);
+      allow create: if staff() && demo() && request.resource.data.staffUid == request.auth.uid;
+      allow update: if manager() && resource.data.isDemo == true;
+      allow delete: if false;
+    }
+    match /stock_movements/{id} {
+      allow read: if manager();
+      allow create: if staff(); // Emulator simulation, never production.
+      allow update, delete: if false;
+    }
+    match /suppliers/{id} {
+      allow read: if manager();
+      allow create, update: if manager();
+      allow delete: if false;
+    }
+    match /purchase_receipts/{id} {
+      allow read: if manager();
+      allow create: if manager() && request.resource.data.status == 'Pending';
+      allow update: if admin() && resource.data.status == 'Pending';
+      allow delete: if false;
+    }
+    match /stocktakes/{id} {
+      allow read: if manager();
+      allow create: if manager() && request.resource.data.status == 'Pending';
+      allow update: if admin() && resource.data.status == 'Pending';
+      allow delete: if false;
+    }
+    match /damage_reports/{id} {
+      allow read: if manager();
+      allow create: if manager() && request.resource.data.status == 'Pending';
+      allow update: if manager() && resource.data.status == 'Pending';
+      allow delete: if false;
+    }
+    match /inventory_units/{id} {
+      allow read: if staff();
+      allow create: if manager();
+      allow update: if staff() && (manager() || request.resource.data.diff(resource.data)
+        .affectedKeys().hasOnly(['trackingStatus','holdId','soldOrderId','reservedOrderId','soldAt']));
+      allow delete: if false;
+    }
+    match /inventory_unit_codes/{id} { allow create: if manager(); allow read: if manager(); }
+    match /shift_schedule/{uid} {
+      allow read, write: if staff() && (uid == request.auth.uid || manager());
+    }
+    match /shifts/{id} {
+      allow read: if staff() && (manager() || own('staffUid'));
+      allow create: if staff() && (manager() || request.resource.data.staffUid == request.auth.uid);
+      allow update: if manager();
+      allow delete: if false;
+    }
+    match /shift_swaps/{id} {
+      allow get: if staff();
+      allow list: if manager() || (staff() && (resource.data.requesterUid == request.auth.uid || resource.data.replacementUid == request.auth.uid));
+      allow create: if staff() && request.resource.data.requesterUid == request.auth.uid;
+      allow update: if manager() || own('requesterUid') || own('replacementUid');
+      allow delete: if false;
+    }
+    match /attendance/{id} {
+      allow get: if staff();
+      allow list: if manager() || (staff() && resource.data.staffUid == request.auth.uid);
+      allow create: if staff() && request.resource.data.staffUid == request.auth.uid;
+      allow update: if manager() || own('staffUid');
+      allow delete: if false;
+    }
+    match /attendance_corrections/{id} {
+      allow get: if staff();
+      allow list: if manager() || (staff() && resource.data.staffUid == request.auth.uid);
+      allow create: if staff() && request.resource.data.staffUid == request.auth.uid;
+      allow update: if manager();
+    }
+    match /payroll_adjustments/{id} {
+      allow read: if manager() || (staff() && own('staffUid'));
+      allow create: if manager() && request.resource.data.status == 'Pending';
+      allow update: if admin() && resource.data.status == 'Pending';
+    }
+    match /payroll_periods/{id} { allow read: if manager(); allow create: if admin(); }
+    match /payroll_records/{id} {
+      allow read: if manager() || (staff() && own('uid'));
+      allow create: if admin() && demo();
+    }
+    match /expenses/{id} { allow read, create: if admin(); }
+    match /notifications/{id} {
+      allow read: if staff() && own('recipientUid');
+      allow update: if staff() && own('recipientUid')
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readAt']);
+      allow create: if manager();
+    }
+    match /staff_requests/{id} {
+      allow read: if manager();
+      allow create: if manager();
+      allow update: if admin();
+    }
+    match /promotion_proposals/{id} {
+      allow read: if manager() || (staff() && resource.data.status == 'Approved');
+      allow create: if manager(); allow update: if admin();
+    }
+    match /system_settings/{id} { allow read: if staff(); allow write: if admin(); }
+    match /product_changes/{id} { allow read: if manager(); allow create: if manager(); }
+    match /{document=**} { allow read, write: if false; }
+  }
+}
