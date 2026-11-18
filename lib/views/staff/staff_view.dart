@@ -12,13 +12,16 @@ import '../../widgets/app_loading_overlay.dart';
 
 class StaffView extends StatefulWidget {
   const StaffView({super.key, required this.role});
+
   final UserRole role;
+
   @override
   State<StaffView> createState() => _StaffViewState();
 }
 
 class _StaffViewState extends State<StaffView> {
   final StaffViewModel _vm = StaffViewModel();
+
   @override
   void initState() {
     super.initState();
@@ -68,14 +71,13 @@ class _StaffViewState extends State<StaffView> {
                 decoration: const InputDecoration(labelText: 'Số điện thoại'),
                 onChanged: (v) => phone = v,
               ),
-              if (widget.role == UserRole.admin)
-                TextField(
-                  obscureText: true,
-                  enableSuggestions: false,
-                  autocorrect: false,
-                  decoration: const InputDecoration(labelText: 'Mật khẩu'),
-                  onChanged: (v) => password = v,
-                ),
+              TextField(
+                obscureText: true,
+                enableSuggestions: false,
+                autocorrect: false,
+                decoration: const InputDecoration(labelText: 'Mật khẩu'),
+                onChanged: (v) => password = v,
+              ),
               TextFormField(
                 initialValue: hourly,
                 decoration: const InputDecoration(labelText: 'Lương giờ (VND)'),
@@ -120,7 +122,14 @@ class _StaffViewState extends State<StaffView> {
     }
   }
 
-  Future<void> _reviewStaff(String id) async {
+  Future<void> _reviewStaff(
+    String id,
+    String name,
+    String email,
+    String phone,
+    String password,
+    String hourly,
+  ) async {
     final approved = await showDialog<bool>(
       context: context,
       builder: (dialog) => AlertDialog(
@@ -143,6 +152,8 @@ class _StaffViewState extends State<StaffView> {
     );
     if (approved == null) return;
     try {
+      final amount = int.tryParse(hourly);
+      await _vm.createAccount(name, email, phone, password, 'staff', amount);
       await _vm.review(id, approved);
       if (mounted) setState(() {});
       _message('Đã xử lý đề xuất tài khoản.');
@@ -362,7 +373,7 @@ class _StaffViewState extends State<StaffView> {
                           widget.role == UserRole.admin &&
                                   _vm.pendingIds.contains(s.id)
                               ? TextButton(
-                                  onPressed: () => _reviewStaff(s.id),
+                                  onPressed: () => _reviewStaff(s.id,s.name,s.email,s.phone,s.pass),
                                   child: const Text('Pending · Duyệt'),
                                 )
                               : Row(

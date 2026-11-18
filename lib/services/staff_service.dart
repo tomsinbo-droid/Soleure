@@ -141,9 +141,6 @@ class StaffService {
     final secondaryAuth = FirebaseAuth.instanceFor(
       app: await _provisioningApp(),
     );
-    if (const bool.fromEnvironment('SOLEURE_FIRESTORE_EMULATOR')) {
-      secondaryAuth.useAuthEmulator('127.0.0.1', 9099);
-    }
     UserCredential? credential;
     var profileCreated = false;
     try {

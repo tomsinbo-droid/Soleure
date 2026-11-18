@@ -39,6 +39,7 @@ class StaffViewModel {
           id: id,
           name: r['name']?.toString() ?? '-',
           role: 'Staff đề xuất',
+          email: "",
           phone: r['phone']?.toString() ?? '-',
           hourlyRate: (r['hourlyRate'] as num? ?? 0).toDouble(),
           status: 'Pending',
