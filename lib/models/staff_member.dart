@@ -5,8 +5,7 @@ class StaffMember {
   const StaffMember({
     required this.id,
     required this.name,
-    this.email="",
-    this.password="",
+    this.email = '',
     required this.role,
     required this.phone,
     required this.hourlyRate,
@@ -17,7 +16,6 @@ class StaffMember {
   final String id;
   final String name;
   final String email;
-  final String password;
   final String role;
   final String phone;
   final double hourlyRate;
@@ -30,7 +28,6 @@ class StaffMember {
       id: profile.uid,
       name: profile.displayName.isEmpty ? profile.uid : profile.displayName,
       email: profile.email,
-      password: profile.password,
       role: profile.role?.label ?? 'Chưa cấp quyền',
       phone: profile.phone.isEmpty ? '-' : profile.phone,
       hourlyRate: profile.hourlyRate,

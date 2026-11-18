@@ -30,9 +30,13 @@
 Luồng này chỉ dùng Firebase Authentication và Firestore, không dùng Cloud
 Functions. App dùng Firebase Auth app phụ để tạo user mới mà không làm đăng
 xuất Admin hiện tại, rồi Admin ghi hồ sơ `users/{uid}` theo Firestore Rules.
-Sau khi tạo, app gửi email đặt lại mật khẩu để người dùng tự đặt mật khẩu lần
-đầu. Hãy bật Email/Password trong Firebase Authentication và cấu hình mẫu
-email reset.
+Manager gửi đề xuất không kèm mật khẩu. Khi duyệt, Admin nhập mật khẩu ban đầu;
+app tạo tài khoản Authentication và ghi hồ sơ Staff cùng trạng thái duyệt.
+Admin cần chuyển mật khẩu cho nhân viên qua kênh an toàn; nhân viên có thể dùng
+chức năng quên mật khẩu để tự đổi. Đề xuất bị từ chối không tạo tài khoản.
+Hãy bật Email/Password trong Firebase Authentication và cấu hình email reset.
+Auth và Firestore không hỗ trợ giao dịch chung: nếu dọn tài khoản Authentication
+thất bại sau lỗi ghi Firestore, Admin phải kiểm tra Firebase Console.
 
 ## Not implemented as live cloud operations
 

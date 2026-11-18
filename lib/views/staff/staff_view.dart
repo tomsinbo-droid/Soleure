@@ -21,6 +21,7 @@ class StaffView extends StatefulWidget {
 
 class _StaffViewState extends State<StaffView> {
   final StaffViewModel _vm = StaffViewModel();
+  bool _reviewing = false;
 
   @override
   void initState() {
@@ -71,13 +72,14 @@ class _StaffViewState extends State<StaffView> {
                 decoration: const InputDecoration(labelText: 'Số điện thoại'),
                 onChanged: (v) => phone = v,
               ),
-              TextField(
-                obscureText: true,
-                enableSuggestions: false,
-                autocorrect: false,
-                decoration: const InputDecoration(labelText: 'Mật khẩu'),
-                onChanged: (v) => password = v,
-              ),
+              if (widget.role == UserRole.admin)
+                TextField(
+                  obscureText: true,
+                  enableSuggestions: false,
+                  autocorrect: false,
+                  decoration: const InputDecoration(labelText: 'Mật khẩu'),
+                  onChanged: (v) => password = v,
+                ),
               TextFormField(
                 initialValue: hourly,
                 decoration: const InputDecoration(labelText: 'Lương giờ (VND)'),
@@ -94,7 +96,7 @@ class _StaffViewState extends State<StaffView> {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(dialog, true),
-            child: const Text('Gửi đề xuất'),
+            child: Text(widget.role == UserRole.admin ? 'Tạo' : 'Gửi đề xuất'),
           ),
         ],
       ),
@@ -115,50 +117,77 @@ class _StaffViewState extends State<StaffView> {
       _message(
         widget.role == UserRole.admin
             ? 'Đã tạo tài khoản Staff.'
-            : 'Đã gửi đề xuất. Admin duyệt trước khi Staff đặt mật khẩu.',
+            : 'Đã gửi đề xuất. Admin sẽ tạo tài khoản khi duyệt.',
       );
     } catch (error) {
       _message('Không tạo được Staff: $error');
     }
   }
 
-  Future<void> _reviewStaff(
-    String id,
-    String name,
-    String email,
-    String phone,
-    String password,
-    String hourly,
-  ) async {
+  Future<void> _reviewStaff(String id, String name, String email) async {
+    if (_reviewing) return;
+    String password = '';
+    final formKey = GlobalKey<FormState>();
     final approved = await showDialog<bool>(
       context: context,
       builder: (dialog) => AlertDialog(
         title: const Text('Phê duyệt tài khoản Staff'),
-        content: const Text(
-          'Duyệt đề xuất Staff. Với Firebase Spark, tài khoản '
-          'Authentication cần được tạo riêng trong Firebase Console.',
+        content: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Nhân viên: $name\nEmail đăng nhập: $email'),
+              TextFormField(
+                obscureText: true,
+                enableSuggestions: false,
+                autocorrect: false,
+                decoration: const InputDecoration(
+                  labelText: 'Mật khẩu ban đầu',
+                  helperText: 'Ít nhất 6 ký tự',
+                ),
+                validator: (value) => (value?.length ?? 0) < 6
+                    ? 'Mật khẩu phải có ít nhất 6 ký tự.'
+                    : null,
+                onChanged: (value) => password = value,
+              ),
+            ],
+          ),
         ),
         actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialog),
+            child: const Text('Hủy'),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(dialog, false),
             child: const Text('Từ chối'),
           ),
           FilledButton(
-            onPressed: () => Navigator.pop(dialog, true),
+            onPressed: () {
+              if (formKey.currentState!.validate()) Navigator.pop(dialog, true);
+            },
             child: const Text('Duyệt'),
           ),
         ],
       ),
     );
-    if (approved == null) return;
+    if (approved == null || !mounted || _reviewing) return;
+    setState(() => _reviewing = true);
     try {
-      final amount = int.tryParse(hourly);
-      await _vm.createAccount(name, email, phone, password, 'staff', amount);
-      await _vm.review(id, approved);
+      if (approved) {
+        await _vm.approve(id, password);
+      } else {
+        await _vm.review(id, false);
+      }
       if (mounted) setState(() {});
-      _message('Đã xử lý đề xuất tài khoản.');
+      _message(approved
+          ? 'Đã duyệt và tạo tài khoản Staff. Hãy chuyển mật khẩu an toàn cho nhân viên.'
+          : 'Đã từ chối đề xuất.');
     } catch (error) {
       _message('Không phê duyệt được: $error');
+    } finally {
+      if (mounted) setState(() => _reviewing = false);
     }
   }
 
@@ -373,7 +402,9 @@ class _StaffViewState extends State<StaffView> {
                           widget.role == UserRole.admin &&
                                   _vm.pendingIds.contains(s.id)
                               ? TextButton(
-                                  onPressed: () => _reviewStaff(s.id,s.name,s.email,s.phone,s.pass),
+                                  onPressed: _reviewing
+                                      ? null
+                                      : () => _reviewStaff(s.id, s.name, s.email),
                                   child: const Text('Pending · Duyệt'),
                                 )
                               : Row(

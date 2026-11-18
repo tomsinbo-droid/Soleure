@@ -39,7 +39,7 @@ class StaffViewModel {
           id: id,
           name: r['name']?.toString() ?? '-',
           role: 'Staff đề xuất',
-          email: "",
+          email: r['email']?.toString() ?? '',
           phone: r['phone']?.toString() ?? '-',
           hourlyRate: (r['hourlyRate'] as num? ?? 0).toDouble(),
           status: 'Pending',
@@ -61,6 +61,11 @@ class StaffViewModel {
 
   Future<void> review(String id, bool approved) async {
     await _staffService.reviewStaff(id, approved);
+    await load();
+  }
+
+  Future<void> approve(String id, String password) async {
+    await _staffService.approveStaff(id, password);
     await load();
   }
 

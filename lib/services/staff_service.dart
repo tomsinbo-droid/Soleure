@@ -12,6 +12,7 @@ import 'auth_service.dart';
 class StaffService {
   late final FirebaseFirestore _db = FirebaseFirestore.instance;
   final AuthService _authService = AuthService();
+  static Future<FirebaseAuth>? _secondaryAuthFuture;
 
   Future<FirebaseApp> _provisioningApp() async {
     const name = 'staff-account-provisioning';
@@ -63,7 +64,10 @@ class StaffService {
     String phone,
     int hourlyRate,
   ) async {
-    if (name.trim().isEmpty || !email.contains('@') || hourlyRate < 0) {
+    if (name.trim().isEmpty ||
+        !_isValidEmail(email.trim().toLowerCase()) ||
+        hourlyRate < 0 ||
+        hourlyRate > 1000000) {
       throw StateError('Hồ sơ Staff chưa hợp lệ.');
     }
 
@@ -81,11 +85,104 @@ class StaffService {
   Future<void> reviewStaff(String id, bool approved) async {
     final uid = _authService.currentUid;
     if (uid == null) throw StateError('Bạn chưa đăng nhập.');
-    await _db.collection(FirebaseCollections.staffRequests).doc(id).update({
-      'status': approved ? 'Approved' : 'Rejected',
-      'reviewedBy': uid,
-      'reviewedAt': FieldValue.serverTimestamp(),
+    if (approved) throw StateError('Duyệt cần tạo tài khoản Staff.');
+    final ref = _db.collection(FirebaseCollections.staffRequests).doc(id);
+    await _db.runTransaction((transaction) async {
+      final request = await transaction.get(ref);
+      if (!request.exists || request.data()?['status'] != 'Pending') {
+        throw StateError('Đề xuất không còn chờ duyệt.');
+      }
+      transaction.update(ref, {
+        'status': 'Rejected',
+        'reviewedBy': uid,
+        'reviewedAt': FieldValue.serverTimestamp(),
+      });
     });
+  }
+
+  Future<void> approveStaff(String id, String password) async {
+    final reviewer = _authService.currentUid;
+    if (reviewer == null) throw StateError('Bạn chưa đăng nhập.');
+    if (password.length < 6) {
+      throw StateError('Mật khẩu phải có ít nhất 6 ký tự.');
+    }
+    final requestRef = _db.collection(FirebaseCollections.staffRequests).doc(id);
+    final request = await requestRef.get();
+    final data = request.data();
+    if (data == null || data['status'] != 'Pending') {
+      throw StateError('Đề xuất không còn chờ duyệt.');
+    }
+    final email = (data['email'] as String? ?? '').trim().toLowerCase();
+    final name = (data['name'] as String? ?? '').trim();
+    final phone = (data['phone'] as String? ?? '').trim();
+    final rate = data['hourlyRate'];
+    if (!_isValidEmail(email) || name.isEmpty || rate is! int ||
+        rate < 0 || rate > 1000000) {
+      throw StateError('Thông tin đề xuất chưa hợp lệ.');
+    }
+    final secondaryAuth = await _secondaryAuth();
+    User? createdUser;
+    var committed = false;
+    try {
+      final credential = await secondaryAuth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      createdUser = credential.user;
+      if (createdUser == null) throw StateError('Không tạo được mã tài khoản.');
+      final user = createdUser;
+      await _db.runTransaction((transaction) async {
+        final current = await transaction.get(requestRef);
+        final currentData = current.data();
+        if (currentData == null || currentData['status'] != 'Pending' ||
+            currentData['email'] != data['email'] ||
+            currentData['name'] != data['name'] ||
+            currentData['phone'] != data['phone'] ||
+            currentData['hourlyRate'] != rate) {
+          throw StateError('Đề xuất đã thay đổi hoặc không còn chờ duyệt.');
+        }
+        transaction.set(_db.collection(FirebaseCollections.users).doc(user.uid), {
+          'uid': user.uid,
+          'displayName': name,
+          'email': email,
+          'phone': phone,
+          'role': 'staff',
+          'hourlyRate': rate,
+          'active': true,
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+        transaction.update(requestRef, {
+          'status': 'Approved',
+          'reviewedBy': reviewer,
+          'reviewedAt': FieldValue.serverTimestamp(),
+        });
+      });
+      committed = true;
+    } catch (error) {
+      if (!committed && createdUser != null) {
+        try {
+          await createdUser.delete();
+        } catch (_) {
+          throw StateError('Không hoàn tất duyệt và không thể xóa tài khoản '
+              'Authentication vừa tạo. Admin cần kiểm tra Firebase Console.');
+        }
+      }
+      rethrow;
+    } finally {
+      await secondaryAuth.signOut();
+    }
+  }
+
+  Future<FirebaseAuth> _secondaryAuth() =>
+      _secondaryAuthFuture ??= _initSecondaryAuth();
+
+  Future<FirebaseAuth> _initSecondaryAuth() async {
+    final auth = FirebaseAuth.instanceFor(app: await _provisioningApp());
+    if (const bool.fromEnvironment('SOLEURE_FIRESTORE_EMULATOR')) {
+      await auth.useAuthEmulator('127.0.0.1', 9099);
+    }
+    return auth;
   }
 
   Future<List<UserProfile>> getStaffProfiles() async {
@@ -138,9 +235,7 @@ class StaffService {
       throw StateError('Thông tin tài khoản chưa hợp lệ.');
     }
 
-    final secondaryAuth = FirebaseAuth.instanceFor(
-      app: await _provisioningApp(),
-    );
+    final secondaryAuth = await _secondaryAuth();
     UserCredential? credential;
     var profileCreated = false;
     try {
