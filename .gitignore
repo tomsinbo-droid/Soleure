@@ -55,3 +55,5 @@ functions/scripts/.seed-credentials.*.json
 scripts/firebase/node_modules/
 .firebase/
 .emulator-data/
+# Widget Preview related
+.widget_preview/
