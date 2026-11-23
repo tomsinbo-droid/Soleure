@@ -380,7 +380,7 @@ class _StaffViewState extends State<StaffView> {
           child: DataTableShell(
             child: DataTable(
               columns: const [
-                DataColumn(label: Text('Mã')),
+                // DataColumn(label: Text('Mã')),
                 DataColumn(label: Text('Họ tên')),
                 DataColumn(label: Text('Vai trò')),
                 DataColumn(label: Text('Điện thoại')),
@@ -392,7 +392,7 @@ class _StaffViewState extends State<StaffView> {
                   .map(
                     (s) => DataRow(
                       cells: [
-                        DataCell(Text(s.id)),
+                        // DataCell(Text(s.id)),
                         DataCell(Text(s.name)),
                         DataCell(Text(s.role)),
                         DataCell(Text(s.phone)),
