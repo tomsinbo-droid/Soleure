@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -110,7 +111,11 @@ class _AttendanceViewState extends State<AttendanceView> {
                       .map(
                         (r) => DropdownMenuItem<String>(
                           value: r['id'].toString(),
-                          child: Text(r['date'].toString()),
+                          child: Text(
+                            AttendanceViewModel.formatDateTime(
+                              (r['checkInAt'] as Timestamp?)?.toDate(),
+                            ),
+                          ),
                         ),
                       )
                       .toList(),
@@ -146,7 +151,15 @@ class _AttendanceViewState extends State<AttendanceView> {
     );
     if (ok != true) return;
     final row = candidates.firstWhere((r) => r['id'] == id);
-    final date = row['date'].toString();
+    final checkInDate = (row['checkInAt'] as Timestamp?)?.toDate();
+    if (checkInDate == null) {
+      _message('Không tìm thấy ngày chấm công.');
+      return;
+    }
+    final date =
+        '${checkInDate.year.toString().padLeft(4, '0')}-'
+        '${checkInDate.month.toString().padLeft(2, '0')}-'
+        '${checkInDate.day.toString().padLeft(2, '0')}';
     final checkIn = DateTime.tryParse('${date}T${start.trim()}:00');
     final checkOut = DateTime.tryParse('${date}T${end.trim()}:00');
     if (checkIn == null || checkOut == null || !checkOut.isAfter(checkIn)) {
@@ -286,8 +299,7 @@ class _AttendanceViewState extends State<AttendanceView> {
               DataTableShell(
                 child: DataTable(
                   columns: [
-                    if (widget.role != UserRole.staff)
-                      const DataColumn(label: Text('Nhân viên')),
+                    const DataColumn(label: Text('Nhân viên')),
                     const DataColumn(label: Text('Ngày')),
                     DataColumn(label: Text('Check-in')),
                     DataColumn(label: Text('Check-out')),
@@ -299,13 +311,12 @@ class _AttendanceViewState extends State<AttendanceView> {
                     final id = _vm.attendanceRows[i]['id'].toString();
                     return DataRow(
                       cells: [
-                        if (widget.role != UserRole.staff)
-                          DataCell(
-                            Text(
-                              _vm.attendanceRows[i]['staffName']?.toString() ??
-                                  '-',
-                            ),
+                        DataCell(
+                          Text(
+                            _vm.attendanceRows[i]['staffName']?.toString() ??
+                                '-',
                           ),
+                        ),
                         DataCell(Text(row.$1)),
                         DataCell(Text(row.$2)),
                         DataCell(Text(row.$3)),

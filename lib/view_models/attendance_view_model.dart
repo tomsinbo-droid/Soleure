@@ -14,11 +14,24 @@ class AttendanceViewModel {
       ? '-'
       : '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
 
+  static String formatDate(DateTime? date) => date == null
+      ? '-'
+      : '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+
+  static String formatDateTime(DateTime? date) => date == null
+      ? '-'
+      : '${formatDate(date)} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+
   Future<void> load() async {
     final rows = await _attendanceService.getAttendance();
     rows.sort(
       (a, b) =>
-          (b['date'] ?? '').toString().compareTo((a['date'] ?? '').toString()),
+          ((b['checkInAt'] as Timestamp?)?.toDate() ??
+                  DateTime.fromMillisecondsSinceEpoch(0))
+              .compareTo(
+                (a['checkInAt'] as Timestamp?)?.toDate() ??
+                    DateTime.fromMillisecondsSinceEpoch(0),
+              ),
     );
     attendanceRows = rows;
     corrections = await _attendanceService.getAttendanceCorrections();
@@ -29,9 +42,9 @@ class AttendanceViewModel {
           ? 0
           : end.difference(start).inMinutes;
       return (
-        r['date']?.toString() ?? '-',
-        _clock(start),
-        _clock(end),
+        formatDate(start),
+        formatDateTime(start),
+        formatDateTime(end),
         end == null ? '-' : '${minutes ~/ 60}h ${minutes % 60}m',
         end == null ? 'Đang làm' : (r['workStatus']?.toString() ?? 'Pending'),
       );

@@ -19,7 +19,35 @@ class AttendanceService {
     final snap = session?.role == UserRole.staff
         ? await q.where('staffUid', isEqualTo: uid).limit(200).get()
         : await q.limit(200).get();
-    return snap.docs.map((d) => {'id': d.id, ...d.data()}).toList();
+    final rows = snap.docs.map((d) => {'id': d.id, ...d.data()}).toList();
+    final staffUids = rows
+        .map((row) => row['staffUid']?.toString() ?? '')
+        .where((staffUid) => staffUid.isNotEmpty)
+        .toSet();
+    final names = <String, String>{};
+    await Future.wait(
+      staffUids.map((staffUid) async {
+        try {
+          final profile = await _db
+              .collection(FirebaseCollections.users)
+              .doc(staffUid)
+              .get();
+          final name = profile.data()?['displayName']?.toString().trim();
+          if (name != null && name.isNotEmpty) names[staffUid] = name;
+        } on FirebaseException catch (error) {
+          if (error.code != 'permission-denied') rethrow;
+        }
+      }),
+    );
+    for (final row in rows) {
+      final staffUid = row['staffUid']?.toString() ?? '';
+      final savedName = row['staffName']?.toString().trim();
+      row['staffName'] =
+          names[staffUid] ??
+          (savedName != null && savedName.isNotEmpty ? savedName : null) ??
+          (staffUid.isEmpty ? '-' : staffUid);
+    }
+    return rows;
   }
 
   Future<void> checkAttendance(bool checkIn) async {
