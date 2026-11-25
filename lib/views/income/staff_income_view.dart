@@ -1,3 +1,5 @@
+// Công dụng tệp: Thu nhập cá nhân.
+
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -12,18 +14,21 @@ import '../../widgets/app_loading_overlay.dart';
 class StaffIncomeView extends StatefulWidget {
   const StaffIncomeView({super.key, required this.role});
   final UserRole role;
+  /// Tạo trạng thái quản lý vòng đời và dữ liệu của màn hình.
   @override
   State<StaffIncomeView> createState() => _StaffIncomeViewState();
 }
 
 class _StaffIncomeViewState extends State<StaffIncomeView> {
   final StaffIncomeViewModel _vm = StaffIncomeViewModel();
+  /// Khởi tạo trạng thái cần thiết khi thành phần được tạo.
   @override
   void initState() {
     super.initState();
     _load();
   }
 
+  /// Tải dữ liệu thu nhập cá nhân và cập nhật trạng thái tương ứng.
   Future<void> _load() async {
     try {
       await AppLoading.run(_vm.load);
@@ -36,6 +41,7 @@ class _StaffIncomeViewState extends State<StaffIncomeView> {
     }
   }
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) {
     final metrics = [
@@ -136,6 +142,7 @@ class _StaffIncomeViewState extends State<StaffIncomeView> {
     );
   }
 
+  /// Xây dựng một dòng thông tin để hiển thị.
   Widget _row(String label, String value, {bool bold = false}) => Padding(
     padding: const EdgeInsets.symmetric(vertical: 7),
     child: Row(

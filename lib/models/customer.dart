@@ -1,3 +1,5 @@
+// Công dụng tệp: Khách hàng và lịch sử mua.
+
 class Customer {
   const Customer({
     required this.id,
@@ -14,6 +16,7 @@ class Customer {
   final String favorite;
   final String lastPurchase;
 
+  /// Tạo đối tượng từ mã định danh và dữ liệu bản đồ.
   factory Customer.fromMap(String id, Map<String, dynamic> data) => Customer(
     id: id,
     name: data['name'] as String? ?? '',
@@ -23,6 +26,7 @@ class Customer {
     lastPurchase: data['lastPurchase'] as String? ?? '-',
   );
 
+  /// Chuyển dữ liệu hiện tại thành bản đồ để lưu hoặc truyền đi.
   Map<String, dynamic> toMap() => {
     'name': name,
     'phone': phone,

@@ -1,9 +1,11 @@
 #!/usr/bin/env node
+// Công dụng tệp: Kiểm tra tĩnh một số điều kiện an toàn của mã và cấu hình Firebase.
 'use strict';
 const fs = require('node:fs');
 const path = require('node:path');
 const assert = require('node:assert/strict');
 const root = path.resolve(__dirname, '../..');
+// Duyệt đệ quy các thư mục để thu thập đường dẫn tệp.
 const walk = dir => fs.readdirSync(dir,{withFileTypes:true}).flatMap(e=>{
   const full=path.join(dir,e.name);return e.isDirectory()?walk(full):[full];
 });

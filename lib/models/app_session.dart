@@ -1,3 +1,5 @@
+// Công dụng tệp: Lưu thông tin phiên đăng nhập.
+
 import 'user_role.dart';
 
 class AppSession {

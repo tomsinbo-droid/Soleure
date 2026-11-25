@@ -1,3 +1,4 @@
+// Công dụng tệp: Khai báo dữ liệu mẫu cho môi trường Firebase thử nghiệm.
 'use strict';
 
 // Một file dữ liệu mẫu duy nhất. Không chứa mật khẩu hay khóa Firebase.

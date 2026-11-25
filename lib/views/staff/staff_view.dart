@@ -1,3 +1,5 @@
+// Công dụng tệp: Nhân sự.
+
 import '../../core/constants/app_defaults.dart';
 import 'package:flutter/material.dart';
 
@@ -15,6 +17,7 @@ class StaffView extends StatefulWidget {
 
   final UserRole role;
 
+  /// Tạo trạng thái quản lý vòng đời và dữ liệu của màn hình.
   @override
   State<StaffView> createState() => _StaffViewState();
 }
@@ -23,12 +26,14 @@ class _StaffViewState extends State<StaffView> {
   final StaffViewModel _vm = StaffViewModel();
   bool _reviewing = false;
 
+  /// Khởi tạo trạng thái cần thiết khi thành phần được tạo.
   @override
   void initState() {
     super.initState();
     _load();
   }
 
+  /// Tải dữ liệu nhân sự và cập nhật trạng thái tương ứng.
   Future<void> _load() async {
     try {
       await AppLoading.run(_vm.load);
@@ -41,6 +46,7 @@ class _StaffViewState extends State<StaffView> {
     }
   }
 
+  /// Tạo nhân viên.
   Future<void> _createStaff() async {
     String name = '',
         email = '',
@@ -124,6 +130,7 @@ class _StaffViewState extends State<StaffView> {
     }
   }
 
+  /// Xem xét và xử lý nhân viên.
   Future<void> _reviewStaff(String id, String name, String email) async {
     if (_reviewing) return;
     String password = '';
@@ -191,6 +198,7 @@ class _StaffViewState extends State<StaffView> {
     }
   }
 
+  /// Mở biểu mẫu tạo tài khoản Manager.
   Future<void> _createManager() async {
     String name = '',
         email = '',
@@ -261,6 +269,7 @@ class _StaffViewState extends State<StaffView> {
     }
   }
 
+  /// Chỉnh sửa tài khoản.
   Future<void> _editAccount(
     String uid,
     String currentName,
@@ -347,11 +356,13 @@ class _StaffViewState extends State<StaffView> {
     }
   }
 
+  /// Hiển thị thông báo cho người dùng trên màn hình.
   void _message(String text) {
     if (mounted)
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
   }
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) {
     return Column(

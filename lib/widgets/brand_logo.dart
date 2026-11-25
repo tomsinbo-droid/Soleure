@@ -1,3 +1,5 @@
+// Công dụng tệp: Hiển thị logo.
+
 import 'package:flutter/material.dart';
 
 import '../core/constants/app_assets.dart';
@@ -8,6 +10,7 @@ class BrandLogo extends StatelessWidget {
   final double height;
   final BoxFit fit;
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) {
     return ClipRRect(

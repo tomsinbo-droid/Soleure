@@ -1,3 +1,5 @@
+// Công dụng tệp: Hàng hóa và tồn kho.
+
 import '../services/supplier_service.dart';
 import '../services/product_service.dart';
 import '../services/inventory_service.dart';
@@ -14,10 +16,12 @@ class InventoryViewModel {
 
   List<Product> products = [];
 
+  /// Tải danh sách sản phẩm.
   Future<void> loadProducts() async {
     products = await _productService.getProducts();
   }
 
+  /// Tải dữ liệu hàng hóa và tồn kho và cập nhật trạng thái tương ứng.
   Future<void> load() async {
     await loadProducts();
     final session = await _authService.getCurrentSession();
@@ -40,6 +44,7 @@ class InventoryViewModel {
         .toList();
   }
 
+  /// Ghi nhận hao hụt.
   Future<String> reportDamage(
     String sku,
     String reason,
@@ -56,18 +61,23 @@ class InventoryViewModel {
     return id;
   }
 
+  /// Tải lên ảnh biên bản hao hụt.
   Future<void> uploadDamagePhoto(String id, Uint8List bytes, String name) =>
       _damageService.uploadDamagePhoto(id, bytes, name);
 
+  /// Lấy ảnh biên bản hao hụt.
   Future<Uint8List?> getDamagePhoto(String id) =>
       _damageService.getDamagePhoto(id);
 
+  /// Lấy ảnh sản phẩm.
   Future<Uint8List?> getProductPhoto(String sku) =>
       _productService.getProductPhoto(sku);
 
+  /// Tải lên ảnh sản phẩm.
   Future<void> uploadProductPhoto(String sku, Uint8List bytes, String name) =>
       _productService.uploadProductPhoto(sku, bytes, name);
 
+  /// Chỉnh sửa sản phẩm.
   Future<void> editProduct(Product product) async {
     await _productService.updateProduct(
       product,
@@ -76,11 +86,13 @@ class InventoryViewModel {
     await loadProducts();
   }
 
+  /// Thêm sản phẩm.
   Future<void> addProduct(Product product) async {
     await _productService.saveProduct(product);
     await loadProducts();
   }
 
+  /// Lọc hàng hóa và tồn kho.
   List<Product> filter(String search, String location) {
     final q = search.trim().toLowerCase();
     final place = location.trim().toLowerCase();
@@ -96,6 +108,7 @@ class InventoryViewModel {
   List<Map<String, dynamic>> damageRows = [];
   List<(String, String, String, String, String)> damageRecords = [];
 
+  /// Xem xét và xử lý hao hụt.
   Future<void> reviewDamage(String id, bool approved) async {
     await _damageService.reviewDamage(id, approved);
     await load();
@@ -116,26 +129,31 @@ class InventorySprint3ViewModel {
   List<Map<String, dynamic>> stockSnapshot = [];
   List<Product> products = [];
 
+  /// Tải danh sách nhà cung cấp.
   Future<void> loadSuppliers() async {
     suppliers = await _supplierService.getSuppliers();
   }
 
+  /// Tải danh sách phiếu nhập kho.
   Future<void> loadReceipts() async {
     await loadSuppliers();
     receipts = await _inventoryService.getPurchaseReceipts();
     products = await _productService.getProducts();
   }
 
+  /// Tải các phiếu kiểm kê.
   Future<void> loadStocktakes() async {
     stocktakes = await _inventoryService.getStocktakes();
     stockSnapshot = await _inventoryService.getStockSnapshot();
   }
 
+  /// Tải các đơn vị hàng.
   Future<void> loadUnits() async {
     units = await _inventoryService.getInventoryUnits();
     products = await _productService.getProducts();
   }
 
+  /// Thêm nhà cung cấp.
   Future<void> addSupplier(
     String name,
     String phone,
@@ -146,11 +164,13 @@ class InventorySprint3ViewModel {
     await loadSuppliers();
   }
 
+  /// Ngưng sử dụng nhà cung cấp.
   Future<void> deactivateSupplier(String id) async {
     await _supplierService.deactivateSupplier(id);
     await loadSuppliers();
   }
 
+  /// Thêm phiếu nhập.
   Future<void> addReceipt(
     String supplierId,
     List<Map<String, dynamic>> lines,
@@ -160,21 +180,25 @@ class InventorySprint3ViewModel {
     receipts = await _inventoryService.getPurchaseReceipts();
   }
 
+  /// Xem xét và xử lý phiếu nhập.
   Future<void> reviewReceipt(String id, bool approve) async {
     await _inventoryService.reviewPurchaseReceipt(id, approve);
     receipts = await _inventoryService.getPurchaseReceipts();
   }
 
+  /// Thêm phiếu kiểm kê.
   Future<void> addCount(List<Map<String, dynamic>> lines) async {
     await _inventoryService.createStocktake(lines);
     stocktakes = await _inventoryService.getStocktakes();
   }
 
+  /// Xem xét và xử lý phiếu kiểm kê.
   Future<void> reviewCount(String id, bool approve) async {
     await _inventoryService.reviewStocktake(id, approve);
     stocktakes = await _inventoryService.getStocktakes();
   }
 
+  /// Thêm đơn vị hàng.
   Future<void> addUnit(
     String sku,
     String code,

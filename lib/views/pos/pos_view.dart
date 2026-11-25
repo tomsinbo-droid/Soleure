@@ -1,3 +1,5 @@
+// Công dụng tệp: Bán hàng tại quầy.
+
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -15,6 +17,7 @@ class PosView extends StatefulWidget {
   const PosView({super.key, required this.role});
   final UserRole role;
 
+  /// Tạo trạng thái quản lý vòng đời và dữ liệu của màn hình.
   @override
   State<PosView> createState() => _PosViewState();
 }
@@ -24,12 +27,14 @@ class _PosViewState extends State<PosView> {
   final _search = TextEditingController();
   bool _saving = false;
 
+  /// Khởi tạo trạng thái cần thiết khi thành phần được tạo.
   @override
   void initState() {
     super.initState();
     _load();
   }
 
+  /// Tải dữ liệu bán hàng tại quầy và cập nhật trạng thái tương ứng.
   Future<void> _load() async {
     try {
       await AppLoading.run(_vm.loadFromFirebase);
@@ -42,12 +47,14 @@ class _PosViewState extends State<PosView> {
     }
   }
 
+  /// Giải phóng tài nguyên khi thành phần không còn được sử dụng.
   @override
   void dispose() {
     _search.dispose();
     super.dispose();
   }
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -91,6 +98,7 @@ class _PosViewState extends State<PosView> {
     );
   }
 
+  /// Xây dựng khu vực tìm và chọn sản phẩm.
   Widget _productPanel() {
     return SectionCard(
       child: Column(
@@ -136,6 +144,7 @@ class _PosViewState extends State<PosView> {
     );
   }
 
+  /// Xây dựng khu vực giỏ hàng và thanh toán.
   Widget _cartPanel() {
     return SectionCard(
       child: Column(
@@ -277,6 +286,7 @@ class _PosViewState extends State<PosView> {
     );
   }
 
+  /// Chọn từng đơn vị hàng cho sản phẩm trong giỏ.
   Future<void> _selectUnits(CartItem item) async {
     final options = _vm.availableUnits(item.product);
     final chosen = <String>{...item.unitIds};
@@ -326,6 +336,7 @@ class _PosViewState extends State<PosView> {
     if (result != null && mounted) setState(() => _vm.setUnits(item, result));
   }
 
+  /// Xây dựng danh sách giao dịch QR đang chờ đối chiếu.
   Widget _pendingQrPanel() => SectionCard(
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -373,6 +384,7 @@ class _PosViewState extends State<PosView> {
     ),
   );
 
+  /// Nhận thông tin đối chiếu và xác nhận giao dịch QR.
   Future<void> _confirmQr(Map<String, dynamic> row) async {
     String bankId = '';
     String amount = '';
@@ -444,6 +456,7 @@ class _PosViewState extends State<PosView> {
     }
   }
 
+  /// Nhận SKU từ bàn phím hoặc máy quét để tìm sản phẩm.
   Future<void> _scanSku() async {
     String code = '';
     final result = await showDialog<String>(
@@ -475,6 +488,7 @@ class _PosViewState extends State<PosView> {
     setState(() => _vm.search = result.trim());
   }
 
+  /// Thực hiện quy trình hoàn tất giao dịch bán hàng.
   Future<void> _completeBill() async {
     if (_saving || _vm.cart.isEmpty) return;
     final isCash = _vm.paymentMethod == 'Tiền mặt';
@@ -542,6 +556,7 @@ class _PosViewState extends State<PosView> {
     }
   }
 
+  /// Mở hộp thoại tạo phiếu giữ hàng từ giỏ.
   Future<void> _showHoldDialog() async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -591,6 +606,7 @@ class _ProductCard extends StatelessWidget {
   final Product product;
   final VoidCallback onTap;
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -696,6 +712,7 @@ class _CartRow extends StatelessWidget {
   final VoidCallback onSelectUnits;
   final List<String> selectedCodes;
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -762,6 +779,7 @@ class _AmountRow extends StatelessWidget {
   final String value;
   final Color valueColor;
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) => Row(
     children: [

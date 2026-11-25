@@ -1,3 +1,5 @@
+// Công dụng tệp: Bán hàng tại quầy.
+
 import '../core/constants/app_defaults.dart';
 import '../services/settings_service.dart';
 import '../services/inventory_service.dart';
@@ -36,6 +38,7 @@ class PosViewModel {
 
   double commissionRate = AppDefaults.commissionRate;
 
+  /// Tải dữ liệu cần thiết cho màn hình bán hàng từ Firebase.
   Future<void> loadFromFirebase() async {
     final settings = await _settingsService.getSettings();
     commissionRate =
@@ -53,6 +56,7 @@ class PosViewModel {
         : customers.where((customer) => customer.id == selectedId).firstOrNull;
   }
 
+  /// Lưu bản nháp.
   Future<void> saveDraft() => _posService.saveOrderDraft(
     cart,
     selectedCustomer?.id == walkInCustomer.id ? null : selectedCustomer?.id,
@@ -60,11 +64,13 @@ class PosViewModel {
 
   String? _saleRequestId;
 
+  /// Giữ giỏ hàng.
   Future<String> holdCart() async => _holdService.createHold(
     cart,
     selectedCustomer?.id == walkInCustomer.id ? null : selectedCustomer?.id,
   );
 
+  /// Hoàn tất giao dịch QR.
   Future<Map<String, dynamic>> completeQrPayment() async {
     _saleRequestId ??= _posService.newSaleRequestId();
     return _paymentService.createQrPayment(
@@ -74,6 +80,7 @@ class PosViewModel {
     );
   }
 
+  /// Xác nhận giao dịch QR.
   Future<void> confirmQrPayment(
     String id,
     String bankId,
@@ -83,6 +90,7 @@ class PosViewModel {
     pendingQr = await _paymentService.getPendingQr();
   }
 
+  /// Lấy các đơn vị hàng có thể chọn cho sản phẩm.
   List<Map<String, dynamic>> availableUnits(Product product) => units
       .where(
         (unit) =>
@@ -93,6 +101,7 @@ class PosViewModel {
       )
       .toList();
 
+  /// Thiết lập các đơn vị hàng.
   void setUnits(CartItem item, List<String> ids) {
     if (ids.length > item.quantity)
       throw StateError('Số mã xe vượt số lượng mua.');
@@ -102,10 +111,12 @@ class PosViewModel {
     _saleRequestId = null;
   }
 
+  /// Hủy hiệu lực giao dịch bán hàng.
   void invalidateSale() {
     _saleRequestId = null;
   }
 
+  /// Hoàn tất giao dịch tiền mặt.
   Future<Map<String, dynamic>> completeCashSale() async {
     _saleRequestId ??= _posService.newSaleRequestId();
     return _posService.completeCashSale(
@@ -133,6 +144,7 @@ class PosViewModel {
         .toList();
   }
 
+  /// Thêm sản phẩm.
   void addProduct(Product product) {
     _saleRequestId = null;
     final existing = cart
@@ -145,6 +157,7 @@ class PosViewModel {
     cart.add(CartItem(product: product));
   }
 
+  /// Tăng bán hàng tại quầy.
   void increase(CartItem item) {
     if (item.quantity < item.product.stock) {
       item.quantity++;
@@ -152,6 +165,7 @@ class PosViewModel {
     }
   }
 
+  /// Giảm bán hàng tại quầy.
   void decrease(CartItem item) {
     _saleRequestId = null;
     if (item.quantity > 1) {
@@ -169,6 +183,7 @@ class PosViewModel {
       .where((e) => e.product.kpiEligible)
       .fold(0, (sum, item) => sum + item.lineTotal * commissionRate);
 
+  /// Xóa giỏ hàng.
   void clearCart() {
     cart.clear();
     _saleRequestId = null;

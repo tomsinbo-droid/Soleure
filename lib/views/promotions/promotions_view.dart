@@ -1,3 +1,5 @@
+// Công dụng tệp: Khuyến mãi.
+
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -12,6 +14,7 @@ import '../../widgets/app_loading_overlay.dart';
 class PromotionsView extends StatefulWidget {
   const PromotionsView({super.key, required this.role});
   final UserRole role;
+  /// Tạo trạng thái quản lý vòng đời và dữ liệu của màn hình.
   @override
   State<PromotionsView> createState() => _PromotionsViewState();
 }
@@ -19,12 +22,14 @@ class PromotionsView extends StatefulWidget {
 class _PromotionsViewState extends State<PromotionsView> {
   final _vm = PromotionViewModel();
   bool _busy = false;
+  /// Khởi tạo trạng thái cần thiết khi thành phần được tạo.
   @override
   void initState() {
     super.initState();
     _load();
   }
 
+  /// Tải dữ liệu khuyến mãi và cập nhật trạng thái tương ứng.
   Future<void> _load() async {
     try {
       await AppLoading.run(_vm.load);
@@ -34,6 +39,7 @@ class _PromotionsViewState extends State<PromotionsView> {
     }
   }
 
+  /// Hiển thị thông báo cho người dùng trên màn hình.
   void _message(String message) {
     if (mounted)
       ScaffoldMessenger.of(
@@ -41,6 +47,7 @@ class _PromotionsViewState extends State<PromotionsView> {
       ).showSnackBar(SnackBar(content: Text(message)));
   }
 
+  /// Đề xuất khuyến mãi.
   Future<void> _propose() async {
     String name = '', scope = '', discount = '', from = '', to = '';
     final yes = await showDialog<bool>(
@@ -107,6 +114,7 @@ class _PromotionsViewState extends State<PromotionsView> {
     await _perform(() => _vm.propose(name, scope, percent, start, end));
   }
 
+  /// Thực hiện thao tác được yêu cầu và thông báo kết quả.
   Future<void> _perform(Future<void> Function() action) async {
     if (_busy) return;
     setState(() => _busy = true);
@@ -121,6 +129,7 @@ class _PromotionsViewState extends State<PromotionsView> {
     }
   }
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) {
     return Column(

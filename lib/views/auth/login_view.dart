@@ -1,3 +1,5 @@
+// Công dụng tệp: Đăng nhập.
+
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -10,6 +12,7 @@ import 'forgot_password_view.dart';
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
 
+  /// Tạo trạng thái quản lý vòng đời và dữ liệu của màn hình.
   @override
   State<LoginView> createState() => _LoginViewState();
 }
@@ -25,6 +28,7 @@ class _LoginViewState extends State<LoginView> {
   bool _loggingIn = false;
   String? _error;
 
+  /// Giải phóng tài nguyên khi thành phần không còn được sử dụng.
   @override
   void dispose() {
     _accountController.dispose();
@@ -32,6 +36,7 @@ class _LoginViewState extends State<LoginView> {
     super.dispose();
   }
 
+  /// Đăng nhập đăng nhập.
   Future<void> _login() async {
     if (_loggingIn) return;
     FocusScope.of(context).unfocus();
@@ -60,12 +65,14 @@ class _LoginViewState extends State<LoginView> {
     }
   }
 
+  /// Mở màn hình yêu cầu đặt lại mật khẩu.
   void _openForgotPassword() {
     Navigator.of(
       context,
     ).push(MaterialPageRoute(builder: (_) => const ForgotPasswordView()));
   }
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
@@ -92,6 +99,7 @@ class _LoginViewState extends State<LoginView> {
     );
   }
 
+  /// Xây dựng bố cục đăng nhập cho màn hình dọc.
   Widget _buildPortraitLayout(
     BuildContext context, {
     required bool isTabletPortrait,
@@ -127,6 +135,7 @@ class _LoginViewState extends State<LoginView> {
     );
   }
 
+  /// Xây dựng phần nhận diện thương hiệu của màn hình đăng nhập.
   Widget _buildBrandPanel(BuildContext context, {required bool compact}) {
     return Container(
       decoration: const BoxDecoration(
@@ -195,6 +204,7 @@ class _LoginViewState extends State<LoginView> {
     );
   }
 
+  /// Xây dựng biểu mẫu đăng nhập.
   Widget _buildLoginCard(
     BuildContext context, {
     required bool showMobileBrand,
@@ -362,6 +372,7 @@ class _Tag extends StatelessWidget {
   final String label;
   final Color color;
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) {
     return Container(

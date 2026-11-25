@@ -1,3 +1,5 @@
+// Công dụng tệp: Biểu diễn một dòng bảng lương.
+
 class PayrollEntry {
   const PayrollEntry({
     required this.staffName,

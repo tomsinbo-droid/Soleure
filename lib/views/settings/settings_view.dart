@@ -1,3 +1,5 @@
+// Công dụng tệp: Cài đặt hệ thống.
+
 import '../../core/constants/app_defaults.dart';
 import '../../view_models/settings_view_model.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +13,7 @@ import '../../widgets/app_loading_overlay.dart';
 class SettingsView extends StatefulWidget {
   const SettingsView({super.key, required this.role});
   final UserRole role;
+  /// Tạo trạng thái quản lý vòng đời và dữ liệu của màn hình.
   @override
   State<SettingsView> createState() => _SettingsViewState();
 }
@@ -22,12 +25,14 @@ class _SettingsViewState extends State<SettingsView> {
   int hourlyRateDefault = AppDefaults.hourlyRateDefault;
   int maxWeeklyHours = AppDefaults.maxWeeklyHours;
 
+  /// Khởi tạo trạng thái cần thiết khi thành phần được tạo.
   @override
   void initState() {
     super.initState();
     _load();
   }
 
+  /// Tải dữ liệu cài đặt hệ thống và cập nhật trạng thái tương ứng.
   Future<void> _load() async {
     try {
       final data = await AppLoading.run(_vm.load);
@@ -48,11 +53,13 @@ class _SettingsViewState extends State<SettingsView> {
     }
   }
 
+  /// Hiển thị thông báo cho người dùng trên màn hình.
   void _message(String text) {
     if (mounted)
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
   }
 
+  /// Chỉnh sửa cài đặt hệ thống.
   Future<void> _edit(String key, String label, String oldValue) async {
     String value = oldValue;
     final confirmed = await showDialog<bool>(
@@ -115,6 +122,7 @@ class _SettingsViewState extends State<SettingsView> {
     }
   }
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -199,6 +207,7 @@ class _SettingsViewState extends State<SettingsView> {
     );
   }
 
+  /// Xây dựng nhóm các thiết lập để hiển thị.
   Widget _group(BuildContext context, String title, List<Widget> children) =>
       SectionCard(
         child: Column(
@@ -218,6 +227,7 @@ class _SettingRow extends StatelessWidget {
   final String value;
   final VoidCallback? onTap;
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) => InkWell(
     onTap: onTap,
@@ -247,6 +257,7 @@ class _Color extends StatelessWidget {
   const _Color(this.label, this.color);
   final String label;
   final Color color;
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) => Column(
     children: [

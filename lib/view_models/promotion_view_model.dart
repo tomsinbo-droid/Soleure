@@ -1,3 +1,5 @@
+// Công dụng tệp: Khuyến mãi.
+
 import '../services/promotion_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -8,12 +10,14 @@ class PromotionViewModel {
 
   List<Promotion> promotions = [];
 
+  /// Chuyển hoặc định dạng giá trị ngày phục vụ xử lý.
   String _date(dynamic value) {
     if (value is! Timestamp) return '-';
     final d = value.toDate();
     return '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}';
   }
 
+  /// Tải dữ liệu khuyến mãi và cập nhật trạng thái tương ứng.
   Future<void> load() async {
     final rows = await _promotionService.getPromotions();
     promotions = rows
@@ -31,6 +35,7 @@ class PromotionViewModel {
         .toList();
   }
 
+  /// Gửi đề xuất trong phân hệ hiện tại.
   Future<void> propose(
     String name,
     String scope,
@@ -42,6 +47,7 @@ class PromotionViewModel {
     await load();
   }
 
+  /// Xử lý thao tác duyệt hoặc từ chối trong khuyến mãi.
   Future<void> review(String id, bool approved) async {
     await _promotionService.reviewPromotion(id, approved);
     await load();

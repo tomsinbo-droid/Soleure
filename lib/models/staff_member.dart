@@ -1,3 +1,5 @@
+// Công dụng tệp: Biểu diễn dữ liệu nhân sự.
+
 import 'user_profile.dart';
 import 'user_role.dart';
 
@@ -23,6 +25,7 @@ class StaffMember {
   final double sales;
 
   /// Hiển thị profile trong bảng Nhân sự. Không cần một bảng role riêng.
+  /// Tạo thông tin nhân viên từ hồ sơ và doanh số.
   factory StaffMember.fromProfile(UserProfile profile, double monthlySales) {
     return StaffMember(
       id: profile.uid,

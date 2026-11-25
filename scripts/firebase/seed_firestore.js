@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// Công dụng tệp: Khởi tạo dữ liệu mẫu Firebase theo các điều kiện an toàn của script.
 'use strict';
 
 // Chạy từ máy dev có Firebase Admin SDK. Mặc định chỉ preview, không ghi.
@@ -9,12 +10,14 @@ const crypto = require('node:crypto');
 const {seedSource, users, products, customers, suppliers, settings} = require('./seed_data');
 
 const flags = process.argv.slice(2);
+// Đọc giá trị của cờ được truyền trên dòng lệnh.
 function flag(name) {
   const i = flags.indexOf(name);
   return i < 0 ? null : flags[i + 1];
 }
+// Thông báo lỗi và đặt mã thoát thất bại.
 function die(message) { console.error(`LỖI: ${message}`); process.exitCode = 1; }
-
+// Thực hiện quy trình chính của script theo tham số và điều kiện kiểm tra.
 async function main() {
   if (flags.includes('--help')) {
     console.log('node scripts/firebase/seed_firestore.js --project <project-id> [--dry-run]');
@@ -58,7 +61,7 @@ async function main() {
   const now = FieldValue.serverTimestamp();
   let created = 0, skipped = 0;
   const context = {seedSource, seedBatchId: 'soleure-firestore-intern-v1', isDemo: true, seededAt: now};
-
+  // Tạo bản ghi mẫu nếu bản ghi đó chưa tồn tại.
   async function createOnly(ref, data) {
     const didCreate = await db.runTransaction(async tx => {
       const doc = await tx.get(ref);
@@ -74,6 +77,7 @@ async function main() {
 
   const output = path.join(__dirname, `.seed-credentials.${projectId}.json`);
   const passwords = fs.existsSync(output) ? JSON.parse(fs.readFileSync(output, 'utf8')) : {};
+  // Lưu thông tin tài khoản mẫu theo cấu hình của script.
   function saveCredentials() {
     // Lưu NGAY sau khi tạo mỗi tài khoản: nếu seed bị ngắt, mật khẩu không thất lạc.
     fs.writeFileSync(output, JSON.stringify(passwords, null, 2) + '\n', {mode: 0o600});

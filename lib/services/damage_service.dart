@@ -1,3 +1,5 @@
+// Công dụng tệp: Hao hụt và hư hỏng.
+
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -9,6 +11,7 @@ class DamageService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final AuthService _authService = AuthService();
 
+  /// Lấy các biên bản hao hụt.
   Future<List<Map<String, dynamic>>> getDamageReports() async {
     final result = await _db
         .collection(FirebaseCollections.damages)
@@ -17,6 +20,7 @@ class DamageService {
     return result.docs.map((d) => {'id': d.id, ...d.data()}).toList();
   }
 
+  /// Tạo biên bản hao hụt.
   Future<String> createDamageReport(
     String sku,
     String reason,
@@ -39,6 +43,7 @@ class DamageService {
     return doc.id;
   }
 
+  /// Tải lên ảnh biên bản hao hụt.
   Future<void> uploadDamagePhoto(
     String id,
     Uint8List bytes,
@@ -62,12 +67,14 @@ class DamageService {
     });
   }
 
+  /// Lấy ảnh biên bản hao hụt.
   Future<Uint8List?> getDamagePhoto(String id) async {
     final doc = await _db.collection(FirebaseCollections.damages).doc(id).get();
     final value = doc.data()?['imageBase64'];
     return value is String && value.isNotEmpty ? base64Decode(value) : null;
   }
 
+  /// Xem xét và xử lý hao hụt.
   Future<void> reviewDamage(String id, bool approved) async {
     final uid = await FirestoreDemoGuard.requireRole(['admin', 'manager']);
     final ref = _db.collection(FirebaseCollections.damages).doc(id);

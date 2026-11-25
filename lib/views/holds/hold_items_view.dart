@@ -1,3 +1,5 @@
+// Công dụng tệp: Hold items.
+
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -12,6 +14,7 @@ import '../../widgets/app_loading_overlay.dart';
 class HoldItemsView extends StatefulWidget {
   const HoldItemsView({super.key, required this.role});
   final UserRole role;
+  /// Tạo trạng thái quản lý vòng đời và dữ liệu của màn hình.
   @override
   State<HoldItemsView> createState() => _HoldItemsViewState();
 }
@@ -20,12 +23,14 @@ class _HoldItemsViewState extends State<HoldItemsView> {
   final _vm = HoldViewModel();
   bool _loading = false;
 
+  /// Khởi tạo trạng thái cần thiết khi thành phần được tạo.
   @override
   void initState() {
     super.initState();
     _load();
   }
 
+  /// Tải dữ liệu hold items và cập nhật trạng thái tương ứng.
   Future<void> _load() async {
     setState(() => _loading = true);
     try {
@@ -38,11 +43,13 @@ class _HoldItemsViewState extends State<HoldItemsView> {
     }
   }
 
+  /// Hiển thị thông báo cho người dùng trên màn hình.
   void _message(String text) {
     if (mounted)
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
   }
 
+  /// Tạo mới dữ liệu hold items theo thông tin được cung cấp.
   Future<void> _create() async {
     String sku = '', count = '1', customerId = '';
     final accepted = await showDialog<bool>(
@@ -98,6 +105,7 @@ class _HoldItemsViewState extends State<HoldItemsView> {
     }
   }
 
+  /// Hủy hold items.
   Future<void> _cancel(String id) async {
     final yes = await showDialog<bool>(
       context: context,
@@ -124,6 +132,7 @@ class _HoldItemsViewState extends State<HoldItemsView> {
     }
   }
 
+  /// Xác nhận thu tiền và xử lý bán hàng từ phiếu giữ.
   Future<void> _payHold(Map<String, dynamic> hold) async {
     final yes = await showDialog<bool>(
       context: context,
@@ -154,6 +163,7 @@ class _HoldItemsViewState extends State<HoldItemsView> {
     }
   }
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) {
     return Column(

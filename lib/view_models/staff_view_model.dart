@@ -1,3 +1,5 @@
+// Công dụng tệp: Nhân sự.
+
 import '../services/staff_service.dart';
 import '../services/pos_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -11,6 +13,7 @@ class StaffViewModel {
   List<StaffMember> staff = [];
   final Set<String> pendingIds = {};
 
+  /// Tải dữ liệu nhân sự và cập nhật trạng thái tương ứng.
   Future<void> load() async {
     final profiles = await _staffService.getStaffProfiles();
     final orders = await _posService.getOrders();
@@ -49,6 +52,7 @@ class StaffViewModel {
     }
   }
 
+  /// Gửi đề xuất trong phân hệ hiện tại.
   Future<void> propose(
     String name,
     String email,
@@ -59,16 +63,19 @@ class StaffViewModel {
     await load();
   }
 
+  /// Xử lý thao tác duyệt hoặc từ chối trong nhân sự.
   Future<void> review(String id, bool approved) async {
     await _staffService.reviewStaff(id, approved);
     await load();
   }
 
+  /// Duyệt nhân sự.
   Future<void> approve(String id, String password) async {
     await _staffService.approveStaff(id, password);
     await load();
   }
 
+  /// Tạo tài khoản.
   Future<void> createAccount(
     String name,
     String email,
@@ -88,6 +95,7 @@ class StaffViewModel {
     await load();
   }
 
+  /// Cập nhật tài khoản.
   Future<void> updateAccount(
     String uid,
     String name,

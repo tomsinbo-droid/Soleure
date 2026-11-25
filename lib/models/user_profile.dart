@@ -1,3 +1,5 @@
+// Công dụng tệp: Biểu diễn hồ sơ tài khoản.
+
 import 'user_role.dart';
 
 /// Một tài khoản = một document Firestore: users/{uid}.
@@ -22,6 +24,7 @@ class UserProfile {
   final double hourlyRate;
   final bool active;
 
+  /// Tạo đối tượng từ mã định danh và dữ liệu bản đồ.
   factory UserProfile.fromMap(String uid, Map<String, dynamic> data) {
     return UserProfile(
       uid: uid,

@@ -1,3 +1,5 @@
+// Công dụng tệp: Cấu hình giao diện và kiểu hiển thị.
+
 import 'package:flutter/material.dart';
 
 import 'app_colors.dart';

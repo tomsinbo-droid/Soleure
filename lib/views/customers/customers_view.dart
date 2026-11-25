@@ -1,3 +1,5 @@
+// Công dụng tệp: Khách hàng.
+
 import 'package:flutter/material.dart';
 
 import '../../core/utils/money_formatter.dart';
@@ -13,6 +15,7 @@ class CustomersView extends StatefulWidget {
   const CustomersView({super.key, required this.role});
   final UserRole role;
 
+  /// Tạo trạng thái quản lý vòng đời và dữ liệu của màn hình.
   @override
   State<CustomersView> createState() => _CustomersViewState();
 }
@@ -21,12 +24,14 @@ class _CustomersViewState extends State<CustomersView> {
   final CustomerViewModel _vm = CustomerViewModel();
   String _query = '';
 
+  /// Khởi tạo trạng thái cần thiết khi thành phần được tạo.
   @override
   void initState() {
     super.initState();
     _load();
   }
 
+  /// Tải dữ liệu khách hàng và cập nhật trạng thái tương ứng.
   Future<void> _load() async {
     try {
       await AppLoading.run(_vm.loadCustomers);
@@ -39,6 +44,7 @@ class _CustomersViewState extends State<CustomersView> {
     }
   }
 
+  /// Thêm khách hàng.
   Future<void> _addCustomer() async {
     String name = '', phone = '', favorite = '';
     final customer = await showDialog<Customer>(
@@ -110,6 +116,7 @@ class _CustomersViewState extends State<CustomersView> {
     }
   }
 
+  /// Hiển thị lịch sử mua hàng của khách.
   Future<void> _showHistory(Customer customer) async {
     try {
       final orders = await _vm.getHistory(customer.id);
@@ -154,6 +161,7 @@ class _CustomersViewState extends State<CustomersView> {
     }
   }
 
+  /// Chỉnh sửa khách hàng.
   Future<void> _editCustomer(Customer customer) async {
     if (widget.role == UserRole.staff) return;
     String name = customer.name,
@@ -219,6 +227,7 @@ class _CustomersViewState extends State<CustomersView> {
     }
   }
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) {
     return Column(

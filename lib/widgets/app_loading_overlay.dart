@@ -1,3 +1,5 @@
+// Công dụng tệp: Hiển thị trạng thái đang tải.
+
 import 'package:flutter/material.dart';
 
 /// Shared, reference-counted loading overlay for asynchronous UI work.
@@ -6,6 +8,7 @@ class AppLoading {
 
   static final ValueNotifier<int> _pending = ValueNotifier<int>(0);
 
+  /// Hiển thị trạng thái đang tải trong khi thực hiện tác vụ bất đồng bộ.
   static Future<T> run<T>(Future<T> Function() action) async {
     _pending.value++;
     try {
@@ -21,6 +24,7 @@ class AppLoadingOverlay extends StatelessWidget {
 
   final Widget child;
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<int>(

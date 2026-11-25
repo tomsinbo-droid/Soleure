@@ -1,3 +1,5 @@
+// Công dụng tệp: Hiển thị tiêu đề trang.
+
 import 'package:flutter/material.dart';
 
 import '../core/theme/app_colors.dart';
@@ -14,6 +16,7 @@ class PageHeader extends StatelessWidget {
   final String subtitle;
   final List<Widget> actions;
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(

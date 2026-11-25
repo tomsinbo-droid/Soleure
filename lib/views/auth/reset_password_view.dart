@@ -1,3 +1,5 @@
+// Công dụng tệp: Đặt lại mật khẩu.
+
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -5,6 +7,7 @@ import '../../core/theme/app_colors.dart';
 class ResetPasswordView extends StatefulWidget {
   const ResetPasswordView({super.key});
 
+  /// Tạo trạng thái quản lý vòng đời và dữ liệu của màn hình.
   @override
   State<ResetPasswordView> createState() => _ResetPasswordViewState();
 }
@@ -12,6 +15,7 @@ class ResetPasswordView extends StatefulWidget {
 class _ResetPasswordViewState extends State<ResetPasswordView> {
   bool _hidden = true;
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) {
     return Scaffold(

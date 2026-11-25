@@ -1,3 +1,6 @@
+// Công dụng tệp: Định dạng số tiền.
+
+/// Định dạng số tiền theo đơn vị đồng Việt Nam.
 String formatVnd(num value) {
   final sign = value < 0 ? '-' : '';
   final digits = value.abs().round().toString();

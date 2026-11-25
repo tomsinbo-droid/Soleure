@@ -1,3 +1,5 @@
+// Công dụng tệp: Khách hàng và lịch sử mua.
+
 import '../core/constants/firebase_collections.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -9,6 +11,7 @@ import 'auth_service.dart';
 class CustomerService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final AuthService _auth = AuthService();
+  /// Lấy danh sách khách hàng.
   Future<List<Customer>> getCustomers() async {
     final result = await _db.collection(FirebaseCollections.customers).get();
     return result.docs
@@ -16,6 +19,7 @@ class CustomerService {
         .toList();
   }
 
+  /// Lưu khách hàng.
   Future<void> saveCustomer(Customer customer) async {
     final ref = _db.collection(FirebaseCollections.customers).doc(customer.id);
     await _db.runTransaction((tx) async {
@@ -25,6 +29,7 @@ class CustomerService {
     });
   }
 
+  /// Chỉnh sửa khách hàng.
   Future<void> editCustomer(Customer customer) async {
     await _db.collection(FirebaseCollections.customers).doc(customer.id).update(
       {
@@ -35,6 +40,7 @@ class CustomerService {
     );
   }
 
+  /// Lấy lịch sử mua hàng của khách.
   Future<List<Map<String, dynamic>>> getCustomerHistory(
     String customerId,
   ) async {

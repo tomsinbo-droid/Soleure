@@ -1,3 +1,5 @@
+// Công dụng tệp: Khuyến mãi.
+
 class Promotion {
   const Promotion({
     this.id = '',

@@ -1,3 +1,5 @@
+// Công dụng tệp: Cấu hình kết nối Firebase theo nền tảng.
+
 // File được cấu hình cho Firebase project "soleure-c1554".
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';

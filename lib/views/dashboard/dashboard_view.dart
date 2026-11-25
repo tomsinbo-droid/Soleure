@@ -1,3 +1,5 @@
+// Công dụng tệp: Tổng quan cửa hàng.
+
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -17,18 +19,21 @@ class DashboardView extends StatefulWidget {
   });
   final UserRole role;
   final ValueChanged<String> onNavigate;
+  /// Tạo trạng thái quản lý vòng đời và dữ liệu của màn hình.
   @override
   State<DashboardView> createState() => _DashboardViewState();
 }
 
 class _DashboardViewState extends State<DashboardView> {
   final DashboardViewModel _vm = DashboardViewModel();
+  /// Khởi tạo trạng thái cần thiết khi thành phần được tạo.
   @override
   void initState() {
     super.initState();
     _load();
   }
 
+  /// Tải dữ liệu tổng quan cửa hàng và cập nhật trạng thái tương ứng.
   Future<void> _load() async {
     try {
       await AppLoading.run(() => _vm.load(widget.role));
@@ -41,6 +46,7 @@ class _DashboardViewState extends State<DashboardView> {
     }
   }
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) {
     final metrics = _vm.metrics(widget.role);
@@ -148,6 +154,7 @@ class _SalesOverview extends StatelessWidget {
   final UserRole role;
   final List<double> values;
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) {
     final maxValue = values.fold<double>(
@@ -234,6 +241,7 @@ class _PendingTasks extends StatelessWidget {
   final List<(String, String, String, String)> items;
   final ValueChanged<String> onNavigate;
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -294,6 +302,7 @@ class _RecentActivity extends StatelessWidget {
   const _RecentActivity({required this.activities});
   final List<(String, String, String)> activities;
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) {
     return Column(

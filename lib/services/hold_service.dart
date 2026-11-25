@@ -1,3 +1,5 @@
+// Công dụng tệp: Giữ hàng.
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../core/constants/firebase_collections.dart';
 import '../models/cart_item.dart';
@@ -6,6 +8,7 @@ import 'firestore_demo_guard.dart';
 class HoldService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
+  /// Lấy danh sách phiếu giữ hàng.
   Future<List<Map<String, dynamic>>> getHolds() async {
     await expireHolds();
     final docs = await _db
@@ -15,6 +18,7 @@ class HoldService {
     return docs.docs.map((d) => {'id': d.id, ...d.data()}).toList();
   }
 
+  /// Tạo phiếu giữ hàng.
   Future<String> createHold(List<CartItem> items, String? customerId) async {
     final uid = await FirestoreDemoGuard.requireRole([
       'admin',
@@ -105,6 +109,7 @@ class HoldService {
     return ref.id;
   }
 
+  /// Hủy phiếu giữ hàng.
   Future<void> cancelHold(String id) async {
     final uid = await FirestoreDemoGuard.requireRole([
       'admin',

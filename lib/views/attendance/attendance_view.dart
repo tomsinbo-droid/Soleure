@@ -1,3 +1,5 @@
+// Công dụng tệp: Chấm công và điều chỉnh giờ làm.
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -14,6 +16,7 @@ class AttendanceView extends StatefulWidget {
   const AttendanceView({super.key, required this.role});
   final UserRole role;
 
+  /// Tạo trạng thái quản lý vòng đời và dữ liệu của màn hình.
   @override
   State<AttendanceView> createState() => _AttendanceViewState();
 }
@@ -22,12 +25,14 @@ class _AttendanceViewState extends State<AttendanceView> {
   final _vm = AttendanceViewModel();
   bool _busy = false;
 
+  /// Khởi tạo trạng thái cần thiết khi thành phần được tạo.
   @override
   void initState() {
     super.initState();
     _load();
   }
 
+  /// Tải dữ liệu chấm công và điều chỉnh giờ làm và cập nhật trạng thái tương ứng.
   Future<void> _load() async {
     try {
       await AppLoading.run(_vm.load);
@@ -37,11 +42,13 @@ class _AttendanceViewState extends State<AttendanceView> {
     }
   }
 
+  /// Hiển thị thông báo cho người dùng trên màn hình.
   void _message(String text) {
     if (mounted)
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
   }
 
+  /// Thực hiện check-in hoặc check-out theo trạng thái hiện tại.
   Future<void> _toggle() async {
     if (_busy) return;
     setState(() => _busy = true);
@@ -55,6 +62,7 @@ class _AttendanceViewState extends State<AttendanceView> {
     }
   }
 
+  /// Xử lý thao tác duyệt hoặc từ chối trong chấm công và điều chỉnh giờ làm.
   Future<void> _review(String id, bool approved) async {
     try {
       await AppLoading.run(() => _vm.review(id, approved));
@@ -65,6 +73,7 @@ class _AttendanceViewState extends State<AttendanceView> {
     }
   }
 
+  /// Xử lý ca chấm công đang mở quá hạn.
   Future<void> _rejectStale(String id) async {
     try {
       await _vm.rejectStale(id);
@@ -75,6 +84,7 @@ class _AttendanceViewState extends State<AttendanceView> {
     }
   }
 
+  /// Nhận thông tin và gửi yêu cầu điều chỉnh giờ công.
   Future<void> _requestCorrection() async {
     final candidates = _vm.attendanceRows
         .where(
@@ -175,6 +185,7 @@ class _AttendanceViewState extends State<AttendanceView> {
     }
   }
 
+  /// Mở và xử lý yêu cầu điều chỉnh giờ công đang chờ.
   Future<void> _reviewCorrection() async {
     final pending = _vm.corrections
         .where((r) => r['status'] == 'Pending')
@@ -213,6 +224,7 @@ class _AttendanceViewState extends State<AttendanceView> {
     }
   }
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) {
     return Column(

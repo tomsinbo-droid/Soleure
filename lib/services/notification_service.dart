@@ -1,3 +1,5 @@
+// Công dụng tệp: Thông báo.
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../core/constants/firebase_collections.dart';
 import 'auth_service.dart';
@@ -7,6 +9,7 @@ class NotificationService {
   final AuthService _auth = AuthService();
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
+  /// Lấy thông báo.
   Future<List<Map<String, dynamic>>> getNotifications() async {
     final uid = _auth.currentUid;
     if (uid == null) return [];
@@ -28,6 +31,7 @@ class NotificationService {
     return items;
   }
 
+  /// Đánh dấu thông báo đã đọc.
   Future<void> markRead(String id) async {
     await _db.collection(FirebaseCollections.notifications).doc(id).update({
       'readAt': FieldValue.serverTimestamp(),

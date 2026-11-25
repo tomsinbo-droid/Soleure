@@ -1,3 +1,5 @@
+// Công dụng tệp: Tài chính và chi phí.
+
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
@@ -15,6 +17,7 @@ import '../../widgets/app_loading_overlay.dart';
 class FinanceView extends StatefulWidget {
   const FinanceView({super.key, required this.role});
   final UserRole role;
+  /// Tạo trạng thái quản lý vòng đời và dữ liệu của màn hình.
   @override
   State<FinanceView> createState() => _FinanceViewState();
 }
@@ -23,12 +26,14 @@ class _FinanceViewState extends State<FinanceView> {
   final FinanceViewModel _vm = FinanceViewModel();
   String _period = 'month';
 
+  /// Khởi tạo trạng thái cần thiết khi thành phần được tạo.
   @override
   void initState() {
     super.initState();
     _load();
   }
 
+  /// Tải dữ liệu tài chính và chi phí và cập nhật trạng thái tương ứng.
   Future<void> _load() async {
     try {
       await AppLoading.run(_vm.load);
@@ -38,11 +43,13 @@ class _FinanceViewState extends State<FinanceView> {
     }
   }
 
+  /// Hiển thị thông báo cho người dùng trên màn hình.
   void _message(String text) {
     if (mounted)
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
   }
 
+  /// Tạo khoản chi.
   Future<void> _createExpense() async {
     String name = '', category = 'Biến phí', amount = '';
     final ok = await showDialog<bool>(
@@ -102,6 +109,7 @@ class _FinanceViewState extends State<FinanceView> {
     }
   }
 
+  /// Chọn khoảng thời gian và tải lại dữ liệu báo cáo.
   Future<void> _chooseRange(String period) async {
     final now = DateTime.now();
     DateTime first;
@@ -137,6 +145,7 @@ class _FinanceViewState extends State<FinanceView> {
     }
   }
 
+  /// Xuất báo cáo hiện tại ra tệp CSV.
   Future<void> _exportCsv() async {
     if (_vm.report == null) {
       _message('Chưa có dữ liệu báo cáo để xuất.');
@@ -159,6 +168,7 @@ class _FinanceViewState extends State<FinanceView> {
     }
   }
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) {
     final metrics = [

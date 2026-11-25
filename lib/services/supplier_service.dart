@@ -1,3 +1,5 @@
+// Công dụng tệp: Nhà cung cấp.
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../core/constants/firebase_collections.dart';
@@ -7,6 +9,7 @@ import 'firestore_demo_guard.dart';
 class SupplierService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
+  /// Lấy danh sách nhà cung cấp.
   Future<List<Map<String, dynamic>>> getSuppliers() async {
     final result = await _db
         .collection(FirebaseCollections.suppliers)
@@ -15,6 +18,7 @@ class SupplierService {
     return result.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList();
   }
 
+  /// Lưu nhà cung cấp.
   Future<void> saveSupplier(
     String name,
     String phone,
@@ -37,6 +41,7 @@ class SupplierService {
         });
   }
 
+  /// Ngưng sử dụng nhà cung cấp.
   Future<void> deactivateSupplier(String id) async {
     await FirestoreDemoGuard.requireRole(['admin', 'manager']);
     await _db.collection(FirebaseCollections.suppliers).doc(id).update({

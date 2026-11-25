@@ -1,3 +1,5 @@
+// Công dụng tệp: Đổi trả hàng.
+
 import '../services/return_service.dart';
 
 class ReturnsViewModel {
@@ -7,6 +9,7 @@ class ReturnsViewModel {
   List<Map<String, dynamic>> requests = [];
   List<Map<String, dynamic>> returnableOrders = [];
 
+  /// Tải dữ liệu đổi trả hàng và cập nhật trạng thái tương ứng.
   Future<void> load() async {
     final results = await Future.wait([
       _returnService.getReturns(),
@@ -33,6 +36,7 @@ class ReturnsViewModel {
         .toList();
   }
 
+  /// Tạo mới dữ liệu đổi trả hàng theo thông tin được cung cấp.
   Future<void> create(
     String orderId,
     String sku,
@@ -56,6 +60,7 @@ class ReturnsViewModel {
     await load();
   }
 
+  /// Hoàn tất xử lý đổi trả hàng.
   Future<void> settle(
     String id,
     bool restockable,

@@ -1,3 +1,5 @@
+// Công dụng tệp: Khai báo các giá trị mặc định.
+
 /// Giá trị mặc định chỉ dùng khi Firestore chưa có cấu hình cửa hàng.
 abstract final class AppDefaults {
   static const double commissionRate = 0.05;

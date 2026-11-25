@@ -1,3 +1,5 @@
+// Công dụng tệp: Tài chính và chi phí.
+
 import '../core/constants/firebase_collections.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -7,6 +9,7 @@ import 'auth_service.dart';
 class FinanceService {
   late final FirebaseFirestore _db = FirebaseFirestore.instance;
   final AuthService _authService = AuthService();
+  /// Lấy các khoản chi.
   Future<List<Map<String, dynamic>>> getExpenses() async {
     final docs = await _db
         .collection(FirebaseCollections.expenses)
@@ -15,6 +18,7 @@ class FinanceService {
     return docs.docs.map((e) => {'id': e.id, ...e.data()}).toList();
   }
 
+  /// Thêm khoản chi.
   Future<void> addExpense(String name, String category, int amount) async {
     if (name.trim().isEmpty || amount < 0)
       throw StateError('Chi phí chưa hợp lệ.');

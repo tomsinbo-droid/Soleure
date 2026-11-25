@@ -1,3 +1,5 @@
+// Công dụng tệp: Biểu diễn một dòng trong giỏ hàng.
+
 import 'product.dart';
 
 class CartItem {

@@ -1,3 +1,5 @@
+// Công dụng tệp: Tài chính và chi phí.
+
 import '../models/finance_report.dart';
 import '../services/finance_service.dart';
 import '../services/report_service.dart';
@@ -37,25 +39,30 @@ class FinanceViewModel {
               (e['amount'] as num? ?? 0).toDouble(),
             ),
         ];
+  /// Tải dữ liệu tài chính và chi phí và cập nhật trạng thái tương ứng.
   Future<void> load() async {
     report = await _reportService.getReport(from, to);
   }
 
+  /// Thiết lập khoảng thời gian.
   Future<void> setRange(DateTime start, DateTime end) async {
     from = start;
     to = end;
     await load();
   }
 
+  /// Tạo khoản chi.
   Future<void> createExpense(String name, String category, int amount) async {
     await _financeService.addExpense(name, category, amount);
     await load();
   }
 
   // UTF-8 CSV; escape formulas to keep spreadsheet imports safe.
+  /// Chuyển dữ liệu hiện tại thành nội dung CSV.
   String toCsv() {
     final current = report;
     if (current == null) return '';
+    /// Chuyển giá trị thành ô dữ liệu CSV.
     String cell(Object? v) {
       var text = v?.toString() ?? '';
       if (v is String && RegExp(r'^\s*[=+@\-\t\r]').hasMatch(text))
@@ -64,6 +71,7 @@ class FinanceViewModel {
       return '"$escaped"';
     }
 
+    /// Tạo một dòng dữ liệu CSV.
     String line(List<Object?> fields) => fields.map(cell).join(',');
     final rows = <String>[
       line([

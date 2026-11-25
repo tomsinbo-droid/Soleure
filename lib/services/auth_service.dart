@@ -1,3 +1,5 @@
+// Công dụng tệp: Đăng nhập và tài khoản.
+
 import '../core/constants/firebase_collections.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -10,6 +12,7 @@ class AuthService {
   late final FirebaseFirestore _db = FirebaseFirestore.instance;
   String? get currentUid => FirebaseAuth.instance.currentUser?.uid;
 
+  /// Lấy phiên đăng nhập hiện tại.
   Future<AppSession?> getCurrentSession() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return null;
@@ -32,6 +35,7 @@ class AuthService {
     );
   }
 
+  /// Đăng nhập bằng thông tin tài khoản được cung cấp.
   Future<void> login(String email, String password) async {
     await FirebaseAuth.instance.signInWithEmailAndPassword(
       email: email,
@@ -39,10 +43,12 @@ class AuthService {
     );
   }
 
+  /// Đăng xuất tài khoản hiện tại.
   Future<void> logout() async {
     await FirebaseAuth.instance.signOut();
   }
 
+  /// Gửi yêu cầu đặt lại mật khẩu qua email.
   Future<void> resetPassword(String email) async {
     await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
   }

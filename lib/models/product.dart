@@ -1,3 +1,5 @@
+// Công dụng tệp: Sản phẩm.
+
 class Product {
   const Product({
     required this.sku,
@@ -27,6 +29,7 @@ class Product {
 
   double get sellingPrice => price * (1 - promoPercent / 100);
 
+  /// Tạo đối tượng từ mã định danh và dữ liệu bản đồ.
   factory Product.fromMap(String sku, Map<String, dynamic> data) => Product(
     sku: sku,
     name: data['name'] as String? ?? '',
@@ -46,6 +49,7 @@ class Product {
     imageBase64: data['imageBase64'] as String?,
   );
 
+  /// Chuyển dữ liệu hiện tại thành bản đồ để lưu hoặc truyền đi.
   Map<String, dynamic> toMap() => {
     'name': name,
     'brand': brand,

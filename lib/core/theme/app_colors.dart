@@ -1,3 +1,5 @@
+// Công dụng tệp: Định nghĩa màu sắc giao diện.
+
 import 'package:flutter/material.dart';
 
 abstract final class AppColors {

@@ -1,3 +1,5 @@
+// Công dụng tệp: Ca làm và đổi ca.
+
 class Shift {
   const Shift({
     required this.id,

@@ -1,3 +1,5 @@
+// Công dụng tệp: Hàng hóa và tồn kho.
+
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:convert';
@@ -19,6 +21,7 @@ class InventoryView extends StatefulWidget {
   const InventoryView({super.key, required this.role});
   final UserRole role;
 
+  /// Tạo trạng thái quản lý vòng đời và dữ liệu của màn hình.
   @override
   State<InventoryView> createState() => _InventoryViewState();
 }
@@ -29,12 +32,14 @@ class _InventoryViewState extends State<InventoryView> {
   String _search = '';
   String _location = '';
 
+  /// Khởi tạo trạng thái cần thiết khi thành phần được tạo.
   @override
   void initState() {
     super.initState();
     _load();
   }
 
+  /// Tải dữ liệu hàng hóa và tồn kho và cập nhật trạng thái tương ứng.
   Future<void> _load() async {
     try {
       await AppLoading.run(_vm.load);
@@ -47,6 +52,7 @@ class _InventoryViewState extends State<InventoryView> {
     }
   }
 
+  /// Thêm sản phẩm.
   Future<void> _addProduct() async {
     if (widget.role == UserRole.staff) return;
     String sku = '', name = '', brand = '', series = '', location = '';
@@ -174,6 +180,7 @@ class _InventoryViewState extends State<InventoryView> {
     }
   }
 
+  /// Chỉnh sửa sản phẩm.
   Future<void> _editProduct(Product product) async {
     if (widget.role == UserRole.staff) return;
     String name = product.name, brand = product.brand, series = product.series;
@@ -267,6 +274,7 @@ class _InventoryViewState extends State<InventoryView> {
     }
   }
 
+  /// Xem xét và xử lý hao hụt.
   Future<void> _reviewDamage(String id, bool approved) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -299,6 +307,7 @@ class _InventoryViewState extends State<InventoryView> {
     }
   }
 
+  /// Hiển thị và xử lý ảnh của sản phẩm.
   Future<void> _productPhoto(Product p) async {
     Uint8List? bytes;
     try {
@@ -356,11 +365,13 @@ class _InventoryViewState extends State<InventoryView> {
     );
   }
 
+  /// Hiển thị thông báo cho người dùng trên màn hình.
   void _message(String text) {
     if (mounted)
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
   }
 
+  /// Tạo hao hụt.
   Future<void> _createDamage() async {
     String sku = '', reason = '', quantity = '1', loss = '0';
     String? imageName;
@@ -480,6 +491,7 @@ class _InventoryViewState extends State<InventoryView> {
     }
   }
 
+  /// Hiển thị ảnh biên bản hao hụt.
   Future<void> _showDamagePhoto(String id) async {
     try {
       final bytes = await _vm.getDamagePhoto(id);
@@ -506,6 +518,7 @@ class _InventoryViewState extends State<InventoryView> {
     }
   }
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -561,6 +574,7 @@ class _InventoryViewState extends State<InventoryView> {
     );
   }
 
+  /// Xây dựng danh sách sản phẩm và tồn kho.
   Widget _products() {
     return SectionCard(
       child: Column(
@@ -647,6 +661,7 @@ class _InventoryViewState extends State<InventoryView> {
     );
   }
 
+  /// Xây dựng ảnh thu nhỏ của sản phẩm.
   Widget _productThumbnail(Product product) {
     final encoded = product.imageBase64;
     if (encoded == null || encoded.isEmpty) {
@@ -676,6 +691,7 @@ class _InventoryViewState extends State<InventoryView> {
     }
   }
 
+  /// Xây dựng danh sách biên bản hao hụt và hư hỏng.
   Widget _damage() {
     return SectionCard(
       child: Column(

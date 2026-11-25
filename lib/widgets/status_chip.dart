@@ -1,3 +1,5 @@
+// Công dụng tệp: Hiển thị nhãn trạng thái.
+
 import 'package:flutter/material.dart';
 
 import '../core/theme/app_colors.dart';
@@ -7,6 +9,7 @@ class StatusChip extends StatelessWidget {
 
   final String label;
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) {
     final normalized = label.toLowerCase();

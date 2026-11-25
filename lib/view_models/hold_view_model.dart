@@ -1,3 +1,5 @@
+// Công dụng tệp: Giữ hàng.
+
 import '../services/product_service.dart';
 import '../services/pos_service.dart';
 import '../services/hold_service.dart';
@@ -13,6 +15,7 @@ class HoldViewModel {
   List<Map<String, dynamic>> rows = [];
   final Map<String, String> productNames = {};
 
+  /// Tải dữ liệu giữ hàng và cập nhật trạng thái tương ứng.
   Future<void> load() async {
     rows = await _holdService.getHolds();
     final products = await _productService.getProducts();
@@ -20,6 +23,7 @@ class HoldViewModel {
     for (final p in products) productNames[p.sku] = p.name;
   }
 
+  /// Xác định trạng thái hiển thị của phiếu giữ hàng.
   String status(Map<String, dynamic> row) {
     if (row['status'] != 'Active') return row['status']?.toString() ?? '-';
     final until = row['expiresAt'];
@@ -28,6 +32,7 @@ class HoldViewModel {
     return 'Active';
   }
 
+  /// Tính thời gian còn lại của phiếu giữ hàng.
   String remaining(Map<String, dynamic> row) {
     if (status(row) != 'Active') return 'Hết hạn';
     final until = row['expiresAt'];
@@ -36,6 +41,7 @@ class HoldViewModel {
     return '${minutes + 1} phút';
   }
 
+  /// Tạo nội dung tên sản phẩm để hiển thị trong phiếu giữ hàng.
   String itemNames(Map<String, dynamic> row) {
     final items = row['items'];
     if (items is! List) return '-';
@@ -48,6 +54,7 @@ class HoldViewModel {
         .join(', ');
   }
 
+  /// Tạo mới dữ liệu giữ hàng theo thông tin được cung cấp.
   Future<void> create(String sku, int quantity, String? customerId) async {
     final matches = await _productService.getProducts();
     final product = matches.where((p) => p.sku == sku).firstOrNull;
@@ -59,6 +66,7 @@ class HoldViewModel {
     await load();
   }
 
+  /// Thực hiện thanh toán tiền mặt cho giao dịch.
   Future<Map<String, dynamic>> payCash(Map<String, dynamic> hold) async {
     final requestId = _posService.newSaleRequestId();
     final result = await _posService.completeHoldCashSale(hold, requestId);
@@ -66,6 +74,7 @@ class HoldViewModel {
     return result;
   }
 
+  /// Hủy giữ hàng.
   Future<void> cancel(String id) async {
     await _holdService.cancelHold(id);
     await load();

@@ -1,3 +1,5 @@
+// Công dụng tệp: Khuyến mãi.
+
 import '../core/constants/firebase_collections.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -7,6 +9,7 @@ import 'auth_service.dart';
 class PromotionService {
   late final FirebaseFirestore _db = FirebaseFirestore.instance;
   final AuthService _authService = AuthService();
+  /// Lấy danh sách khuyến mãi.
   Future<List<Map<String, dynamic>>> getPromotions() async {
     final docs = await _db
         .collection(FirebaseCollections.promotions)
@@ -15,6 +18,7 @@ class PromotionService {
     return docs.docs.map((e) => {'id': e.id, ...e.data()}).toList();
   }
 
+  /// Lấy các khuyến mãi còn hiệu lực.
   Future<List<Map<String, dynamic>>> getActivePromotions() async {
     final docs = await _db
         .collection(FirebaseCollections.promotions)
@@ -24,6 +28,7 @@ class PromotionService {
     return docs.docs.map((e) => {'id': e.id, ...e.data()}).toList();
   }
 
+  /// Đề xuất khuyến mãi.
   Future<void> proposePromotion(
     String name,
     String scope,
@@ -51,6 +56,7 @@ class PromotionService {
     });
   }
 
+  /// Xem xét và xử lý khuyến mãi.
   Future<void> reviewPromotion(String id, bool approved) async {
     await _db.collection(FirebaseCollections.promotions).doc(id).update({
       'status': approved ? 'Approved' : 'Rejected',

@@ -1,3 +1,5 @@
+// Công dụng tệp: Bán hàng tại quầy.
+
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -12,6 +14,7 @@ class PosService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final AuthService _authService = AuthService();
 
+  /// Lưu bản nháp đơn hàng.
   Future<void> saveOrderDraft(List<CartItem> cart, String? customerId) async {
     if (cart.isEmpty) throw StateError('Giỏ hàng trống.');
     final uid = await FirestoreDemoGuard.requireRole([
@@ -38,9 +41,11 @@ class PosService {
     });
   }
 
+  /// Tạo mã yêu cầu riêng cho giao dịch bán hàng.
   String newSaleRequestId() =>
       _db.collection(FirebaseCollections.orders).doc().id;
 
+  /// Hoàn tất giao dịch tiền mặt.
   Future<Map<String, dynamic>> completeCashSale(
     List<CartItem> items,
     String? customerId,
@@ -60,6 +65,7 @@ class PosService {
     paymentMethod: 'cash',
   );
 
+  /// Hoàn tất giao dịch tiền mặt từ phiếu giữ.
   Future<Map<String, dynamic>> completeHoldCashSale(
     Map<String, dynamic> hold,
     String requestId,
@@ -73,6 +79,7 @@ class PosService {
     paymentMethod: 'cash',
   );
 
+  /// Tạo đơn hàng.
   Future<Map<String, dynamic>> createOrder({
     required List<Map<String, dynamic>> items,
     required String requestId,
@@ -328,6 +335,7 @@ class PosService {
     });
   }
 
+  /// Lấy danh sách đơn hàng.
   Future<List<Map<String, dynamic>>> getOrders() async {
     final session = await _authService.getCurrentSession();
     final q = _db.collection(FirebaseCollections.orders);

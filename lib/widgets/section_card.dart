@@ -1,3 +1,5 @@
+// Công dụng tệp: Hiển thị khung nội dung.
+
 import 'package:flutter/material.dart';
 
 class SectionCard extends StatelessWidget {
@@ -10,6 +12,7 @@ class SectionCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry padding;
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) {
     return Card(

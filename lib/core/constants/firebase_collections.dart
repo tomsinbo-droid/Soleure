@@ -1,3 +1,5 @@
+// Công dụng tệp: Khai báo tên các collection Firestore.
+
 /// Tên collection Firestore dùng chung cho tất cả service.
 /// Thống nhất với Firestore Rules và Firebase Admin seed scripts.
 abstract final class FirebaseCollections {

@@ -1,3 +1,5 @@
+// Công dụng tệp: Ca làm và đổi ca.
+
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -13,6 +15,7 @@ class ShiftsView extends StatefulWidget {
   const ShiftsView({super.key, required this.role});
   final UserRole role;
 
+  /// Tạo trạng thái quản lý vòng đời và dữ liệu của màn hình.
   @override
   State<ShiftsView> createState() => _ShiftsViewState();
 }
@@ -22,12 +25,14 @@ class _ShiftsViewState extends State<ShiftsView> {
   int _tab = 0;
   bool _busy = false;
 
+  /// Khởi tạo trạng thái cần thiết khi thành phần được tạo.
   @override
   void initState() {
     super.initState();
     _load();
   }
 
+  /// Hiển thị thông báo cho người dùng trên màn hình.
   void _message(String message) {
     if (mounted)
       ScaffoldMessenger.of(
@@ -35,6 +40,7 @@ class _ShiftsViewState extends State<ShiftsView> {
       ).showSnackBar(SnackBar(content: Text(message)));
   }
 
+  /// Tải dữ liệu ca làm và đổi ca và cập nhật trạng thái tương ứng.
   Future<void> _load() async {
     try {
       await AppLoading.run(_vm.load);
@@ -44,6 +50,7 @@ class _ShiftsViewState extends State<ShiftsView> {
     }
   }
 
+  /// Thực hiện thao tác được yêu cầu và thông báo kết quả.
   Future<void> _perform(Future<void> Function() action) async {
     if (_busy) return;
     setState(() => _busy = true);
@@ -58,6 +65,7 @@ class _ShiftsViewState extends State<ShiftsView> {
     }
   }
 
+  /// Tạo ca làm.
   Future<void> _createShift() async {
     var selectedDate = DateTime.now().add(const Duration(days: 1));
     var startTime = const TimeOfDay(hour: 9, minute: 0);
@@ -189,6 +197,7 @@ class _ShiftsViewState extends State<ShiftsView> {
     );
   }
 
+  /// Xem xét và xử lý ca làm.
   Future<void> _reviewShift(String id) async {
     final approved = await showDialog<bool>(
       context: context,
@@ -210,6 +219,7 @@ class _ShiftsViewState extends State<ShiftsView> {
     await _perform(() => _vm.review(id, approved));
   }
 
+  /// Tạo phiếu đổi ca.
   Future<void> _createSwap() async {
     final approvedShifts = _vm.shifts
         .where((s) => s.status == 'Approved')
@@ -280,13 +290,17 @@ class _ShiftsViewState extends State<ShiftsView> {
       await _perform(() => _vm.requestSwap(shiftId, replacementUid, reason));
   }
 
+  /// Chấp nhận phiếu đổi ca.
   Future<void> _acceptSwap(String id) async =>
       _perform(() => _vm.acceptSwap(id));
+  /// Hủy phiếu đổi ca.
   Future<void> _cancelSwap(String id) async =>
       _perform(() => _vm.cancelSwap(id));
+  /// Xem xét và xử lý phiếu đổi ca.
   Future<void> _reviewSwap(String id, bool approved) async =>
       _perform(() => _vm.reviewSwap(id, approved));
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -326,6 +340,7 @@ class _ShiftsViewState extends State<ShiftsView> {
     );
   }
 
+  /// Xây dựng bảng lịch làm từ dữ liệu ca.
   Widget _schedule() => SectionCard(
     child: DataTableShell(
       child: DataTable(
@@ -360,6 +375,7 @@ class _ShiftsViewState extends State<ShiftsView> {
     ),
   );
 
+  /// Xây dựng danh sách các phiếu đổi ca.
   Widget _swaps() {
     final uid = _vm.currentUid;
     return SectionCard(

@@ -1,3 +1,5 @@
+// Công dụng tệp: Ca làm và đổi ca.
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../core/constants/firebase_collections.dart';
 import '../models/user_role.dart';
@@ -9,6 +11,7 @@ class ShiftService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final AuthService _authService = AuthService();
 
+  /// Lấy danh sách ca làm.
   Future<List<Map<String, dynamic>>> getShifts() async {
     final session = await _authService.getCurrentSession();
     final q = _db.collection(FirebaseCollections.shifts);
@@ -21,6 +24,7 @@ class ShiftService {
     return rows.docs.map((d) => {'id': d.id, ...d.data()}).toList();
   }
 
+  /// Xác định khoảng thời gian liên quan đến ca làm.
   void _window(DateTime start, DateTime end) {
     if (!end.isAfter(start) ||
         !start.isAfter(DateTime.now()) ||
@@ -33,12 +37,14 @@ class ShiftService {
   DocumentReference<Map<String, dynamic>> _lock(String uid) =>
       _db.collection('shift_schedule').doc(uid);
 
+  /// Tạo danh sách các khoảng thời gian từ dữ liệu ca làm.
   List<Map<String, dynamic>> _slots(Map<String, dynamic>? data) {
     return (data?['slots'] as List<dynamic>? ?? [])
         .map((e) => Map<String, dynamic>.from(e as Map))
         .toList();
   }
 
+  /// Thêm ca làm.
   List<Map<String, dynamic>> _addSlot(
     List<Map<String, dynamic>> slots,
     String id,
@@ -70,6 +76,7 @@ class ShiftService {
     ];
   }
 
+  /// Đăng ký ca làm.
   Future<void> registerShift(DateTime start, DateTime end) async {
     final uid = await FirestoreDemoGuard.requireRole(['staff']);
     _window(start, end);
@@ -103,6 +110,7 @@ class ShiftService {
     });
   }
 
+  /// Xem xét và xử lý ca làm.
   Future<void> reviewShift(String id, bool approved) async {
     final uid = await FirestoreDemoGuard.requireRole(['manager', 'admin']);
     final ref = _db.collection(FirebaseCollections.shifts).doc(id);
@@ -132,6 +140,7 @@ class ShiftService {
     });
   }
 
+  /// Lấy các phiếu đổi ca.
   Future<List<Map<String, dynamic>>> getShiftSwaps() async {
     final session = await _authService.getCurrentSession();
     final collection = _db.collection(FirebaseCollections.shiftSwaps);
@@ -152,6 +161,7 @@ class ShiftService {
     return merged.values.toList();
   }
 
+  /// Gửi yêu cầu phiếu đổi ca.
   Future<void> requestShiftSwap(
     String shiftId,
     String replacementUid,
@@ -191,6 +201,7 @@ class ShiftService {
     });
   }
 
+  /// Hủy phiếu đổi ca.
   Future<void> cancelShiftSwap(String id) async {
     final uid = await FirestoreDemoGuard.requireRole(['staff']);
     await _updateSwap(
@@ -202,6 +213,7 @@ class ShiftService {
     );
   }
 
+  /// Chấp nhận phiếu đổi ca.
   Future<void> acceptShiftSwap(String id) async {
     final uid = await FirestoreDemoGuard.requireRole(['staff']);
     final ref = _db.collection(FirebaseCollections.shiftSwaps).doc(id);
@@ -218,6 +230,7 @@ class ShiftService {
     });
   }
 
+  /// Cập nhật phiếu đổi ca.
   Future<void> _updateSwap(
     String id,
     String uid,
@@ -236,6 +249,7 @@ class ShiftService {
     });
   }
 
+  /// Xem xét và xử lý phiếu đổi ca.
   Future<void> reviewShiftSwap(String id, bool approved) async {
     final uid = await FirestoreDemoGuard.requireRole(['admin', 'manager']);
     final swapRef = _db.collection(FirebaseCollections.shiftSwaps).doc(id);
@@ -290,6 +304,7 @@ class ShiftService {
     });
   }
 
+  /// Phân công ca làm.
   Future<void> assignShift(
     String staffUid,
     DateTime start,

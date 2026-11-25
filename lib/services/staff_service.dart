@@ -1,3 +1,5 @@
+// Công dụng tệp: Nhân sự.
+
 import '../core/constants/firebase_collections.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -14,6 +16,7 @@ class StaffService {
   final AuthService _authService = AuthService();
   static Future<FirebaseAuth>? _secondaryAuthFuture;
 
+  /// Lấy ứng dụng Firebase phụ phục vụ quản trị tài khoản.
   Future<FirebaseApp> _provisioningApp() async {
     const name = 'staff-account-provisioning';
     try {
@@ -26,6 +29,7 @@ class StaffService {
     }
   }
 
+  /// Lấy hồ sơ cá nhân của tài khoản hiện tại.
   Future<Map<String, dynamic>?> getMyProfile() async {
     final uid = _authService.currentUid;
     if (uid == null) return null;
@@ -33,6 +37,7 @@ class StaffService {
     return doc.data();
   }
 
+  /// Lấy tên nhân viên.
   Future<List<Map<String, String>>> getStaffNames() async {
     final result = await _db
         .collection(FirebaseCollections.users)
@@ -50,6 +55,7 @@ class StaffService {
         .toList();
   }
 
+  /// Lấy các đề xuất tài khoản nhân viên.
   Future<List<Map<String, dynamic>>> getStaffRequests() async {
     final docs = await _db
         .collection(FirebaseCollections.staffRequests)
@@ -58,6 +64,7 @@ class StaffService {
     return docs.docs.map((e) => {'id': e.id, ...e.data()}).toList();
   }
 
+  /// Đề xuất nhân viên.
   Future<void> proposeStaff(
     String name,
     String email,
@@ -82,6 +89,7 @@ class StaffService {
     });
   }
 
+  /// Xem xét và xử lý nhân viên.
   Future<void> reviewStaff(String id, bool approved) async {
     final uid = _authService.currentUid;
     if (uid == null) throw StateError('Bạn chưa đăng nhập.');
@@ -100,6 +108,7 @@ class StaffService {
     });
   }
 
+  /// Duyệt nhân viên.
   Future<void> approveStaff(String id, String password) async {
     final reviewer = _authService.currentUid;
     if (reviewer == null) throw StateError('Bạn chưa đăng nhập.');
@@ -174,9 +183,11 @@ class StaffService {
     }
   }
 
+  /// Lấy phiên xác thực phụ phục vụ xử lý tài khoản.
   Future<FirebaseAuth> _secondaryAuth() =>
       _secondaryAuthFuture ??= _initSecondaryAuth();
 
+  /// Chuẩn bị phiên xác thực phụ phục vụ xử lý tài khoản.
   Future<FirebaseAuth> _initSecondaryAuth() async {
     final auth = FirebaseAuth.instanceFor(app: await _provisioningApp());
     if (const bool.fromEnvironment('SOLEURE_FIRESTORE_EMULATOR')) {
@@ -185,6 +196,7 @@ class StaffService {
     return auth;
   }
 
+  /// Lấy hồ sơ nhân viên.
   Future<List<UserProfile>> getStaffProfiles() async {
     final session = await _authService.getCurrentSession();
     final collection = _db.collection(FirebaseCollections.users);
@@ -197,6 +209,7 @@ class StaffService {
         .toList();
   }
 
+  /// Cập nhật tài khoản.
   Future<void> updateAccount({
     required String uid,
     required String name,
@@ -218,6 +231,7 @@ class StaffService {
     });
   }
 
+  /// Tạo tài khoản.
   Future<void> createAccount({
     required String name,
     required String email,
@@ -275,8 +289,10 @@ class StaffService {
     }
   }
 
+  /// Kiểm tra vai trò có thuộc nhóm được quản lý hay không.
   bool _isManagedRole(String role) => role == 'manager' || role == 'staff';
 
+  /// Kiểm tra định dạng email trước khi xử lý.
   bool _isValidEmail(String email) =>
       RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email);
 }

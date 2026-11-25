@@ -1,3 +1,5 @@
+// Công dụng tệp: Bảng lương.
+
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -13,18 +15,21 @@ import '../../widgets/app_loading_overlay.dart';
 class PayrollView extends StatefulWidget {
   const PayrollView({super.key, required this.role});
   final UserRole role;
+  /// Tạo trạng thái quản lý vòng đời và dữ liệu của màn hình.
   @override
   State<PayrollView> createState() => _PayrollViewState();
 }
 
 class _PayrollViewState extends State<PayrollView> {
   final PayrollViewModel _vm = PayrollViewModel();
+  /// Khởi tạo trạng thái cần thiết khi thành phần được tạo.
   @override
   void initState() {
     super.initState();
     _load();
   }
 
+  /// Tải dữ liệu bảng lương và cập nhật trạng thái tương ứng.
   Future<void> _load() async {
     try {
       await AppLoading.run(_vm.load);
@@ -37,6 +42,7 @@ class _PayrollViewState extends State<PayrollView> {
     }
   }
 
+  /// Hiển thị thông báo cho người dùng trên màn hình.
   void _message(String message) {
     if (mounted)
       ScaffoldMessenger.of(
@@ -44,6 +50,7 @@ class _PayrollViewState extends State<PayrollView> {
       ).showSnackBar(SnackBar(content: Text(message)));
   }
 
+  /// Mở biểu mẫu và gửi đề xuất điều chỉnh lương.
   Future<void> _adjust() async {
     final staff = await _vm.getStaffNames();
     if (!mounted || staff.isEmpty) {
@@ -116,6 +123,7 @@ class _PayrollViewState extends State<PayrollView> {
     }
   }
 
+  /// Mở và xử lý đề xuất điều chỉnh lương đang chờ.
   Future<void> _reviewAdjustments() async {
     if (_vm.pendingAdjustments.isEmpty) {
       _message('Không có phiếu điều chỉnh chờ duyệt.');
@@ -151,6 +159,7 @@ class _PayrollViewState extends State<PayrollView> {
     }
   }
 
+  /// Chốt hoặc đóng bảng lương.
   Future<void> _close() async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -181,6 +190,7 @@ class _PayrollViewState extends State<PayrollView> {
     }
   }
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) {
     return Column(

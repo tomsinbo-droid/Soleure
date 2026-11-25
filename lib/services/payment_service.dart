@@ -1,3 +1,5 @@
+// Công dụng tệp: Thanh toán QR.
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../core/constants/firebase_collections.dart';
 import '../models/cart_item.dart';
@@ -9,6 +11,7 @@ class PaymentService {
   final PosService _posService = PosService();
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
+  /// Tạo giao dịch QR.
   Future<Map<String, dynamic>> createQrPayment(
     List<CartItem> items,
     String? customerId,
@@ -28,12 +31,14 @@ class PaymentService {
     paymentMethod: 'qr',
   );
 
+  /// Lấy các giao dịch QR đang chờ.
   Future<List<Map<String, dynamic>>> getPendingQr() async {
     await expirePendingQr();
     final orders = await _posService.getOrders();
     return orders.where((row) => row['status'] == 'PendingQr').toList();
   }
 
+  /// Xác nhận giao dịch QR.
   Future<void> confirmQrPayment(
     String id,
     String bankTransactionId,
@@ -167,11 +172,13 @@ class PaymentService {
     }
   }
 
+  /// Hủy giao dịch QR.
   Future<void> cancelQrPayment(String id) async {
     await FirestoreDemoGuard.requireRole(['admin', 'manager', 'staff']);
     await _releaseQr(id, expired: false);
   }
 
+  /// Giải phóng giao dịch QR.
   Future<void> _releaseQr(String id, {required bool expired}) async {
     final uid = await FirestoreDemoGuard.requireRole([
       'admin',

@@ -1,3 +1,5 @@
+// Công dụng tệp: Đăng nhập và tài khoản.
+
 import '../services/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -6,8 +8,10 @@ import '../models/app_session.dart';
 class AuthViewModel {
   final AuthService _authService = AuthService();
 
+  /// Gửi yêu cầu đặt lại mật khẩu qua email.
   Future<void> resetPassword(String email) => _authService.resetPassword(email);
 
+  /// Kiểm tra thông tin đăng nhập trước khi gửi yêu cầu.
   String? validateLogin(String account, String password) {
     if (account.trim().isEmpty) return 'Vui lòng nhập email.';
     if (!account.contains('@')) return 'Email không hợp lệ.';
@@ -15,6 +19,7 @@ class AuthViewModel {
     return null;
   }
 
+  /// Đăng nhập bằng thông tin tài khoản được cung cấp.
   Future<AppSession> login(String account, String password) async {
     try {
       await _authService.login(account.trim(), password);

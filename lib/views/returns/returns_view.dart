@@ -1,3 +1,5 @@
+// Công dụng tệp: Đổi trả hàng.
+
 import 'package:flutter/material.dart';
 
 import '../../models/user_role.dart';
@@ -11,6 +13,7 @@ import '../../widgets/app_loading_overlay.dart';
 class ReturnsView extends StatefulWidget {
   const ReturnsView({super.key, required this.role});
   final UserRole role;
+  /// Tạo trạng thái quản lý vòng đời và dữ liệu của màn hình.
   @override
   State<ReturnsView> createState() => _ReturnsViewState();
 }
@@ -19,12 +22,14 @@ class _ReturnsViewState extends State<ReturnsView> {
   final _vm = ReturnsViewModel();
   bool _isLoading = false;
 
+  /// Khởi tạo trạng thái cần thiết khi thành phần được tạo.
   @override
   void initState() {
     super.initState();
     _load();
   }
 
+  /// Tải dữ liệu đổi trả hàng và cập nhật trạng thái tương ứng.
   Future<void> _load() async {
     if (mounted) {
       setState(() => _isLoading = true);
@@ -41,6 +46,7 @@ class _ReturnsViewState extends State<ReturnsView> {
     }
   }
 
+  /// Hiển thị thông báo cho người dùng trên màn hình.
   void _message(String message) {
     if (mounted)
       ScaffoldMessenger.of(
@@ -48,6 +54,7 @@ class _ReturnsViewState extends State<ReturnsView> {
       ).showSnackBar(SnackBar(content: Text(message)));
   }
 
+  /// Tạo mới dữ liệu đổi trả hàng theo thông tin được cung cấp.
   Future<void> _create() async {
     String orderId = '',
         sku = '',
@@ -218,6 +225,7 @@ class _ReturnsViewState extends State<ReturnsView> {
     }
   }
 
+  /// Hoàn tất xử lý đổi trả hàng.
   Future<void> _settle(Map<String, dynamic> row) async {
     bool restockable = true;
     String bankRefundId = '';
@@ -313,6 +321,7 @@ class _ReturnsViewState extends State<ReturnsView> {
     }
   }
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) {
     return Column(

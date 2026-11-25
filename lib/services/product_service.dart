@@ -1,3 +1,5 @@
+// Công dụng tệp: Sản phẩm.
+
 import '../core/constants/firebase_collections.dart';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -11,6 +13,7 @@ import 'promotion_service.dart';
 class ProductService {
   final PromotionService _promotionService = PromotionService();
   late final FirebaseFirestore _db = FirebaseFirestore.instance;
+  /// Lấy danh sách sản phẩm.
   Future<List<Product>> getProducts() async {
     final result = await _db.collection(FirebaseCollections.products).get();
     // Khuyến mãi đã duyệt được áp dụng giống backend. UI vẫn dùng Product gốc.
@@ -52,6 +55,7 @@ class ProductService {
     }).toList();
   }
 
+  /// Lưu sản phẩm.
   Future<void> saveProduct(Product product) async {
     if (product.sku.trim().isEmpty ||
         product.sku.contains('/') ||
@@ -73,6 +77,7 @@ class ProductService {
     });
   }
 
+  /// Cập nhật sản phẩm.
   Future<void> updateProduct(Product product, String _) async {
     await _db.collection(FirebaseCollections.products).doc(product.sku).update({
       'name': product.name,
@@ -85,6 +90,7 @@ class ProductService {
     });
   }
 
+  /// Tải lên ảnh sản phẩm.
   Future<void> uploadProductPhoto(
     String sku,
     Uint8List bytes,
@@ -110,6 +116,7 @@ class ProductService {
     });
   }
 
+  /// Lấy ảnh sản phẩm.
   Future<Uint8List?> getProductPhoto(String sku) async {
     final doc = await _db
         .collection(FirebaseCollections.products)

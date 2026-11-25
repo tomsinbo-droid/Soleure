@@ -1,3 +1,5 @@
+// Công dụng tệp: Hiển thị chỉ số tổng quan.
+
 import 'package:flutter/material.dart';
 
 import '../core/theme/app_colors.dart';
@@ -18,6 +20,7 @@ class MetricCard extends StatelessWidget {
   final IconData icon;
   final Color tint;
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) {
     return Card(

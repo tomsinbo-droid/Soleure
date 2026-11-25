@@ -1,3 +1,5 @@
+// Công dụng tệp: Bảng lương.
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../core/constants/firebase_collections.dart';
 import '../models/user_role.dart';
@@ -9,6 +11,7 @@ class PayrollService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final AuthService _authService = AuthService();
 
+  /// Chuyển dữ liệu danh sách thành các dòng để xử lý hoặc hiển thị.
   Future<List<Map<String, dynamic>>> _rows(
     String name, {
     String? field,
@@ -25,15 +28,20 @@ class PayrollService {
     return docs.docs.map((d) => {'id': d.id, ...d.data()}).toList();
   }
 
+  /// Lấy các điều chỉnh lương.
   Future<List<Map<String, dynamic>>> getPayrollAdjustments() =>
       _rows(FirebaseCollections.payrollAdjustments, field: 'staffUid');
+  /// Lấy các bản ghi lương.
   Future<List<Map<String, dynamic>>> getPayrollRecords() =>
       _rows(FirebaseCollections.payrollRecords, field: 'uid');
+  /// Lấy các kỳ lương.
   Future<List<Map<String, dynamic>>> getPayrollPeriods() =>
       _rows(FirebaseCollections.payrollPeriods);
+  /// Lấy các sự kiện KPI.
   Future<List<Map<String, dynamic>>> getCommissionEvents() =>
       _rows(FirebaseCollections.commissions, field: 'staffUid');
 
+  /// Thêm điều chỉnh lương.
   Future<void> addPayrollAdjustment(
     String staffUid,
     String period,
@@ -67,6 +75,7 @@ class PayrollService {
     });
   }
 
+  /// Xem xét và xử lý điều chỉnh lương.
   Future<void> reviewPayrollAdjustment(String id, bool approved) async {
     final uid = await FirestoreDemoGuard.requireRole(['admin']);
     final ref = _db.collection(FirebaseCollections.payrollAdjustments).doc(id);
@@ -88,6 +97,7 @@ class PayrollService {
     });
   }
 
+  /// Xác định kỳ tháng theo múi giờ Việt Nam.
   String _vietnamMonth(dynamic time) {
     final d = FirestoreDemoGuard.date(time);
     if (d == null) return '';
@@ -95,6 +105,7 @@ class PayrollService {
     return '${v.year}-${v.month.toString().padLeft(2, '0')}';
   }
 
+  /// Chốt hoặc đóng kỳ lương.
   Future<void> closePayrollPeriod(String period) async {
     final uid = await FirestoreDemoGuard.requireRole(['admin']);
     final current = _vietnamMonth(Timestamp.now());
@@ -103,6 +114,7 @@ class PayrollService {
       throw StateError('Chỉ chốt kỳ tháng đã kết thúc (YYYY-MM).');
     }
     // Giới hạn số bản ghi. Nếu dữ liệu lớn hơn thì không chốt bản tạm thiếu.
+    /// Kiểm tra dữ liệu nguồn có vượt giới hạn truy vấn của báo cáo hay không.
     Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>> limited(
       String collection,
     ) async {

@@ -1,3 +1,5 @@
+// Công dụng tệp: Bảng lương.
+
 import '../services/staff_service.dart';
 import '../services/payroll_service.dart';
 import '../services/attendance_service.dart';
@@ -11,6 +13,7 @@ class PayrollViewModel {
   final AttendanceService _attendanceService = AttendanceService();
   final PayrollService _payrollService = PayrollService();
 
+  /// Lấy tên nhân viên.
   Future<List<Map<String, String>>> getStaffNames() =>
       _staffService.getStaffNames();
 
@@ -20,8 +23,10 @@ class PayrollViewModel {
   String selectedPeriod =
       '${DateTime.now().year}-${DateTime.now().month.toString().padLeft(2, '0')}';
   String get period => selectedPeriod;
+  /// Chọn kỳ lương.
   void selectPeriod(String value) => selectedPeriod = value;
 
+  /// Tải dữ liệu bảng lương và cập nhật trạng thái tương ứng.
   Future<void> load() async {
     final profiles = await _staffService.getStaffProfiles();
     final attendance = await _attendanceService.getAttendance();
@@ -34,6 +39,7 @@ class PayrollViewModel {
     periodClosed = closed.any((p) => p['id'] == period);
     final parts = period.split('-');
     final month = DateTime(int.parse(parts[0]), int.parse(parts[1]));
+    /// Kiểm tra thời điểm có thuộc tháng đang chọn hay không.
     bool thisMonth(DateTime? value) =>
         value != null && value.year == month.year && value.month == month.month;
     entries = profiles.where((u) => u.role == UserRole.staff).map((u) {
@@ -101,6 +107,7 @@ class PayrollViewModel {
     }
   }
 
+  /// Tạo điều chỉnh lương.
   Future<void> createAdjustment(
     String staffUid,
     int amount,
@@ -115,11 +122,13 @@ class PayrollViewModel {
     await load();
   }
 
+  /// Xem xét và xử lý điều chỉnh lương.
   Future<void> reviewAdjustment(String id, bool approved) async {
     await _payrollService.reviewPayrollAdjustment(id, approved);
     await load();
   }
 
+  /// Chốt hoặc đóng kỳ lương.
   Future<void> closePeriod() async {
     await _payrollService.closePayrollPeriod(period);
     await load();

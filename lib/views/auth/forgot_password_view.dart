@@ -1,3 +1,5 @@
+// Công dụng tệp: Quên mật khẩu.
+
 import '../../view_models/auth_view_model.dart';
 import 'package:flutter/material.dart';
 
@@ -8,6 +10,7 @@ import '../../widgets/app_loading_overlay.dart';
 class ForgotPasswordView extends StatefulWidget {
   const ForgotPasswordView({super.key});
 
+  /// Tạo trạng thái quản lý vòng đời và dữ liệu của màn hình.
   @override
   State<ForgotPasswordView> createState() => _ForgotPasswordViewState();
 }
@@ -16,12 +19,14 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
   final _email = TextEditingController();
   final _vm = AuthViewModel();
 
+  /// Giải phóng tài nguyên khi thành phần không còn được sử dụng.
   @override
   void dispose() {
     _email.dispose();
     super.dispose();
   }
 
+  /// Gửi email hướng dẫn đặt lại mật khẩu.
   Future<void> _sendReset() async {
     if (!_email.text.trim().contains('@')) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -47,6 +52,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
     }
   }
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) {
     return Scaffold(

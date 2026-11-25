@@ -1,3 +1,5 @@
+// Công dụng tệp: Đổi trả hàng.
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../core/constants/firebase_collections.dart';
 import '../models/user_role.dart';
@@ -8,6 +10,7 @@ class ReturnService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final AuthService _authService = AuthService();
 
+  /// Lấy các yêu cầu đổi trả.
   Future<List<Map<String, dynamic>>> getReturns() async {
     final session = await _authService.getCurrentSession();
     final collection = _db.collection(FirebaseCollections.returns);
@@ -35,6 +38,7 @@ class ReturnService {
     return docs.docs.map((d) => {'id': d.id, ...d.data()}).toList();
   }
 
+  /// Gửi yêu cầu đổi hoặc trả hàng.
   Future<void> requestReturn({
     required String orderId,
     required String sku,
@@ -117,6 +121,7 @@ class ReturnService {
     });
   }
 
+  /// Hoàn tất xử lý yêu cầu đổi trả.
   Future<void> settleReturn(
     String id, {
     required bool restockable,

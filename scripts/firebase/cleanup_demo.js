@@ -1,7 +1,9 @@
 #!/usr/bin/env node
+// Công dụng tệp: Dọn dữ liệu demo theo tham số và điều kiện bảo vệ của script.
 'use strict';
 // Cleanup is intentionally conservative. No collection wipes, no production.
 const flags = process.argv.slice(2);
+// Lấy giá trị của tham số dòng lệnh theo tên.
 function arg(name) { const i = flags.indexOf(name); return i < 0 ? null : flags[i+1]; }
 const projectId = arg('--project');
 const seedSource = arg('--seed-source');
@@ -16,6 +18,7 @@ const collections = [
   'order_drafts','holds','return_requests','commission_events','expenses',
   'notifications','staff_requests','users',
 ];
+// Thực hiện quy trình chính của script theo tham số và điều kiện kiểm tra.
 async function main() {
   if (flags.includes('--help')) {
     console.log('node scripts/firebase/cleanup_demo.js --project soleure-dev --seed-source soleure-intern-seed-v1 --seed-batch soleure-firestore-intern-v1 [--apply --confirm-project soleure-dev]');

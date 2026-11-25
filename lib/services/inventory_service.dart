@@ -1,3 +1,5 @@
+// Công dụng tệp: Hàng hóa và tồn kho.
+
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -9,15 +11,20 @@ import 'firestore_demo_guard.dart';
 class InventoryService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
+  /// Lấy các phiếu nhập kho.
   Future<List<Map<String, dynamic>>> getPurchaseReceipts() =>
       _rows(FirebaseCollections.receipts);
+  /// Lấy các phiếu kiểm kê.
   Future<List<Map<String, dynamic>>> getStocktakes() =>
       _rows(FirebaseCollections.stocktakes);
+  /// Lấy các đơn vị hàng.
   Future<List<Map<String, dynamic>>> getInventoryUnits() =>
       _rows(FirebaseCollections.units);
+  /// Lấy lịch sử biến động kho.
   Future<List<Map<String, dynamic>>> getStockMovements() =>
       _rows(FirebaseCollections.stockMovements);
 
+  /// Lấy số liệu tồn kho.
   Future<List<Map<String, dynamic>>> getStockSnapshot() async {
     final rows = await _db
         .collection(FirebaseCollections.products)
@@ -26,11 +33,13 @@ class InventoryService {
     return rows.docs.map((d) => {'sku': d.id, ...d.data()}).toList();
   }
 
+  /// Chuyển dữ liệu danh sách thành các dòng để xử lý hoặc hiển thị.
   Future<List<Map<String, dynamic>>> _rows(String collection) async {
     final result = await _db.collection(collection).limit(200).get();
     return result.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList();
   }
 
+  /// Tạo phiếu nhập kho.
   Future<void> createPurchaseReceipt(
     String supplierId,
     List<Map<String, dynamic>> lines,
@@ -70,6 +79,7 @@ class InventoryService {
     });
   }
 
+  /// Xem xét và xử lý phiếu nhập kho.
   Future<void> reviewPurchaseReceipt(String id, bool approved) async {
     final uid = await FirestoreDemoGuard.requireRole(['admin']);
     final ref = _db.collection(FirebaseCollections.receipts).doc(id);
@@ -133,6 +143,7 @@ class InventoryService {
     });
   }
 
+  /// Tạo phiếu kiểm kê.
   Future<void> createStocktake(List<Map<String, dynamic>> lines) async {
     final uid = await FirestoreDemoGuard.requireRole(['admin', 'manager']);
     if (lines.isEmpty || lines.length > 30)
@@ -181,6 +192,7 @@ class InventoryService {
     });
   }
 
+  /// Xem xét và xử lý phiếu kiểm kê.
   Future<void> reviewStocktake(String id, bool approved) async {
     final uid = await FirestoreDemoGuard.requireRole(['admin']);
     final ref = _db.collection(FirebaseCollections.stocktakes).doc(id);
@@ -246,6 +258,7 @@ class InventoryService {
     });
   }
 
+  /// Đăng ký đơn vị hàng.
   Future<void> registerInventoryUnit(
     String sku,
     String code,

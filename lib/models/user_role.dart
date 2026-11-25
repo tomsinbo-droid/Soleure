@@ -1,3 +1,5 @@
+// Công dụng tệp: Định nghĩa vai trò người dùng.
+
 enum UserRole { admin, manager, staff }
 
 extension UserRoleLabel on UserRole {
@@ -13,6 +15,7 @@ extension UserRoleLabel on UserRole {
     return 'Nhân viên part-time';
   }
 
+  /// Chuyển giá trị vai trò trong Firestore thành vai trò của ứng dụng.
   static UserRole? fromFirestore(String? role) {
     if (role == 'admin') return UserRole.admin;
     if (role == 'manager') return UserRole.manager;

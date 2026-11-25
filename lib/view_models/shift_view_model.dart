@@ -1,3 +1,5 @@
+// Công dụng tệp: Ca làm và đổi ca.
+
 import '../services/shift_service.dart';
 import '../services/auth_service.dart';
 import '../services/staff_service.dart';
@@ -10,6 +12,7 @@ class ShiftViewModel {
   final StaffService _staffService = StaffService();
   final ShiftService _shiftService = ShiftService();
 
+  /// Lấy tên nhân viên.
   Future<List<Map<String, String>>> getStaffNames() =>
       _staffService.getStaffNames();
   String? get currentUid => _authService.currentUid;
@@ -18,13 +21,16 @@ class ShiftViewModel {
   List<(String, String, String, String, String)> swaps = [];
   List<Map<String, dynamic>> swapDocs = [];
 
+  /// Chuyển hoặc định dạng giá trị ngày phục vụ xử lý.
   String _date(DateTime date) =>
       '${date.day.toString().padLeft(2, '0')}/'
       '${date.month.toString().padLeft(2, '0')}/${date.year}';
+  /// Định dạng giờ và phút để hiển thị.
   String _clock(DateTime time) =>
       '${time.hour.toString().padLeft(2, '0')}:'
       '${time.minute.toString().padLeft(2, '0')}';
 
+  /// Tải dữ liệu ca làm và đổi ca và cập nhật trạng thái tương ứng.
   Future<void> load() async {
     final rows = await _shiftService.getShifts();
     shifts = rows.map((data) {
@@ -52,36 +58,43 @@ class ShiftViewModel {
         .toList();
   }
 
+  /// Đăng ký ca làm theo thông tin được cung cấp.
   Future<void> register(DateTime start, DateTime end) async {
     await _shiftService.registerShift(start, end);
     await load();
   }
 
+  /// Phân công ca làm cho nhân viên.
   Future<void> assign(String uid, DateTime start, DateTime end) async {
     await _shiftService.assignShift(uid, start, end);
     await load();
   }
 
+  /// Xử lý thao tác duyệt hoặc từ chối trong ca làm và đổi ca.
   Future<void> review(String id, bool approved) async {
     await _shiftService.reviewShift(id, approved);
     await load();
   }
 
+  /// Gửi yêu cầu phiếu đổi ca.
   Future<void> requestSwap(String id, String uid, String reason) async {
     await _shiftService.requestShiftSwap(id, uid, reason);
     await load();
   }
 
+  /// Hủy phiếu đổi ca.
   Future<void> cancelSwap(String id) async {
     await _shiftService.cancelShiftSwap(id);
     await load();
   }
 
+  /// Chấp nhận phiếu đổi ca.
   Future<void> acceptSwap(String id) async {
     await _shiftService.acceptShiftSwap(id);
     await load();
   }
 
+  /// Xem xét và xử lý phiếu đổi ca.
   Future<void> reviewSwap(String id, bool approved) async {
     await _shiftService.reviewShiftSwap(id, approved);
     await load();

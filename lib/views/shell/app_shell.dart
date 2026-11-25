@@ -1,3 +1,5 @@
+// Công dụng tệp: Điều hướng và phiên làm việc.
+
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -25,6 +27,7 @@ class AppShell extends StatefulWidget {
   const AppShell({super.key, this.role = UserRole.admin});
   final UserRole role;
 
+  /// Tạo trạng thái quản lý vòng đời và dữ liệu của màn hình.
   @override
   State<AppShell> createState() => _AppShellState();
 }
@@ -35,6 +38,7 @@ class _AppShellState extends State<AppShell> {
   String _displayName = 'Nhân viên';
   int _pendingCount = 0;
 
+  /// Khởi tạo trạng thái cần thiết khi thành phần được tạo.
   @override
   void initState() {
     super.initState();
@@ -66,6 +70,7 @@ class _AppShellState extends State<AppShell> {
   List<_NavItem> get _visibleItems =>
       _items.where((item) => _vm.canAccess(item.route)).toList();
 
+  /// Chọn màn hình tương ứng với mục điều hướng hiện tại.
   Widget _screen() => switch (_vm.selectedRoute) {
     'pos' => PosView(role: _vm.role),
     'inventory' => InventoryView(role: _vm.role),
@@ -86,11 +91,13 @@ class _AppShellState extends State<AppShell> {
     ),
   };
 
+  /// Chọn điều hướng và phiên làm việc.
   void _select(String route) {
     setState(() => _vm.select(route));
     _loadTopBar();
   }
 
+  /// Tải thanh công cụ.
   Future<void> _loadTopBar() async {
     try {
       final data = await AppLoading.run(_vm.loadTopBar);
@@ -104,6 +111,7 @@ class _AppShellState extends State<AppShell> {
     }
   }
 
+  /// Mở tìm kiếm nhanh sản phẩm và khách hàng.
   Future<void> _globalSearch() async {
     String keyword = '';
     final query = await showDialog<String>(
@@ -186,6 +194,7 @@ class _AppShellState extends State<AppShell> {
     }
   }
 
+  /// Hiển thị danh sách thông báo của người dùng.
   Future<void> _showNotifications() async {
     try {
       final notes = await AppLoading.run(_vm.loadNotifications);
@@ -247,6 +256,7 @@ class _AppShellState extends State<AppShell> {
     }
   }
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -315,6 +325,7 @@ class _AppShellState extends State<AppShell> {
     );
   }
 
+  /// Đăng xuất điều hướng và phiên làm việc.
   Future<void> _logout() async {
     await _vm.logout();
     if (!mounted) return;
@@ -340,6 +351,7 @@ class _Sidebar extends StatelessWidget {
   final ValueChanged<UserRole> onRoleChanged;
   final VoidCallback onLogout;
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -460,6 +472,7 @@ class _TopBar extends StatelessWidget {
   final VoidCallback onNotifications;
   final VoidCallback? onMenu;
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) {
     return Container(

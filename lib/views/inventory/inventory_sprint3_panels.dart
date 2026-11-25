@@ -1,3 +1,5 @@
+// Công dụng tệp: Nhà cung cấp, nhập kho, kiểm kê và từng xe.
+
 import 'package:flutter/material.dart';
 
 import '../../models/product.dart';
@@ -10,6 +12,7 @@ import '../../widgets/app_loading_overlay.dart';
 
 // UI Sprint 3 dùng cùng SectionCard/DataTable như màn Kho gốc.
 // Mỗi màn chỉ có StatefulWidget + setState(), không có Provider hoặc Stream.
+/// Hiển thị thông báo kết quả thao tác kho.
 void showInventoryMessage(BuildContext context, String message) {
   if (context.mounted) {
     ScaffoldMessenger.of(
@@ -21,6 +24,7 @@ void showInventoryMessage(BuildContext context, String message) {
 class SuppliersPanel extends StatefulWidget {
   const SuppliersPanel({super.key, required this.role});
   final UserRole role;
+  /// Tạo trạng thái quản lý vòng đời và dữ liệu của màn hình.
   @override
   State<SuppliersPanel> createState() => _SuppliersPanelState();
 }
@@ -28,12 +32,14 @@ class SuppliersPanel extends StatefulWidget {
 class _SuppliersPanelState extends State<SuppliersPanel> {
   final vm = InventorySprint3ViewModel();
   bool loading = true;
+  /// Khởi tạo trạng thái cần thiết khi thành phần được tạo.
   @override
   void initState() {
     super.initState();
     _load();
   }
 
+  /// Tải dữ liệu nhà cung cấp, nhập kho, kiểm kê và từng xe và cập nhật trạng thái tương ứng.
   Future<void> _load() async {
     try {
       await AppLoading.run(vm.loadSuppliers);
@@ -44,6 +50,7 @@ class _SuppliersPanelState extends State<SuppliersPanel> {
     if (mounted) setState(() => loading = false);
   }
 
+  /// Tạo mới dữ liệu nhà cung cấp, nhập kho, kiểm kê và từng xe theo thông tin được cung cấp.
   Future<void> _create() async {
     String name = '', phone = '', email = '', note = '';
     final ok = await showDialog<bool>(
@@ -100,6 +107,7 @@ class _SuppliersPanelState extends State<SuppliersPanel> {
     }
   }
 
+  /// Ngưng sử dụng nhà cung cấp, nhập kho, kiểm kê và từng xe.
   Future<void> _deactivate(String id) async {
     final ok = await showDialog<bool>(
       context: context,
@@ -127,6 +135,7 @@ class _SuppliersPanelState extends State<SuppliersPanel> {
     }
   }
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) => SectionCard(
     child: Column(
@@ -194,6 +203,7 @@ class _SuppliersPanelState extends State<SuppliersPanel> {
 class PurchaseReceiptsPanel extends StatefulWidget {
   const PurchaseReceiptsPanel({super.key, required this.role});
   final UserRole role;
+  /// Tạo trạng thái quản lý vòng đời và dữ liệu của màn hình.
   @override
   State<PurchaseReceiptsPanel> createState() => _PurchaseReceiptsPanelState();
 }
@@ -202,12 +212,14 @@ class _PurchaseReceiptsPanelState extends State<PurchaseReceiptsPanel> {
   final vm = InventorySprint3ViewModel();
   List<Product> products = [];
   bool loading = true;
+  /// Khởi tạo trạng thái cần thiết khi thành phần được tạo.
   @override
   void initState() {
     super.initState();
     _load();
   }
 
+  /// Tải dữ liệu nhà cung cấp, nhập kho, kiểm kê và từng xe và cập nhật trạng thái tương ứng.
   Future<void> _load() async {
     try {
       await AppLoading.run(vm.loadReceipts);
@@ -219,6 +231,7 @@ class _PurchaseReceiptsPanelState extends State<PurchaseReceiptsPanel> {
     if (mounted) setState(() => loading = false);
   }
 
+  /// Tạo mới dữ liệu nhà cung cấp, nhập kho, kiểm kê và từng xe theo thông tin được cung cấp.
   Future<void> _create() async {
     final choices = vm.suppliers.where((r) => r['active'] == true).toList();
     if (choices.isEmpty || products.isEmpty) {
@@ -367,6 +380,7 @@ class _PurchaseReceiptsPanelState extends State<PurchaseReceiptsPanel> {
     }
   }
 
+  /// Xử lý thao tác duyệt hoặc từ chối trong nhà cung cấp, nhập kho, kiểm kê và từng xe.
   Future<void> _review(String id, bool approved) async {
     final ok = await showDialog<bool>(
       context: context,
@@ -399,6 +413,7 @@ class _PurchaseReceiptsPanelState extends State<PurchaseReceiptsPanel> {
     }
   }
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) => SectionCard(
     child: Column(
@@ -473,6 +488,7 @@ class _PurchaseReceiptsPanelState extends State<PurchaseReceiptsPanel> {
 class StocktakePanel extends StatefulWidget {
   const StocktakePanel({super.key, required this.role});
   final UserRole role;
+  /// Tạo trạng thái quản lý vòng đời và dữ liệu của màn hình.
   @override
   State<StocktakePanel> createState() => _StocktakePanelState();
 }
@@ -481,12 +497,14 @@ class _StocktakePanelState extends State<StocktakePanel> {
   final vm = InventorySprint3ViewModel();
   List<Map<String, dynamic>> stock = [];
   bool loading = true;
+  /// Khởi tạo trạng thái cần thiết khi thành phần được tạo.
   @override
   void initState() {
     super.initState();
     _load();
   }
 
+  /// Tải dữ liệu nhà cung cấp, nhập kho, kiểm kê và từng xe và cập nhật trạng thái tương ứng.
   Future<void> _load() async {
     try {
       await AppLoading.run(vm.loadStocktakes);
@@ -497,6 +515,7 @@ class _StocktakePanelState extends State<StocktakePanel> {
     if (mounted) setState(() => loading = false);
   }
 
+  /// Tạo mới dữ liệu nhà cung cấp, nhập kho, kiểm kê và từng xe theo thông tin được cung cấp.
   Future<void> _create() async {
     if (stock.isEmpty) {
       showInventoryMessage(context, 'Chưa có SKU để kiểm kê.');
@@ -616,6 +635,7 @@ class _StocktakePanelState extends State<StocktakePanel> {
     }
   }
 
+  /// Xử lý thao tác duyệt hoặc từ chối trong nhà cung cấp, nhập kho, kiểm kê và từng xe.
   Future<void> _review(String id, bool approve) async {
     final ok = await showDialog<bool>(
       context: context,
@@ -646,6 +666,7 @@ class _StocktakePanelState extends State<StocktakePanel> {
     }
   }
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) => SectionCard(
     child: Column(
@@ -718,6 +739,7 @@ class _StocktakePanelState extends State<StocktakePanel> {
 
 class InventoryUnitsPanel extends StatefulWidget {
   const InventoryUnitsPanel({super.key});
+  /// Tạo trạng thái quản lý vòng đời và dữ liệu của màn hình.
   @override
   State<InventoryUnitsPanel> createState() => _InventoryUnitsPanelState();
 }
@@ -725,12 +747,14 @@ class InventoryUnitsPanel extends StatefulWidget {
 class _InventoryUnitsPanelState extends State<InventoryUnitsPanel> {
   final vm = InventorySprint3ViewModel();
   List<Product> products = [];
+  /// Khởi tạo trạng thái cần thiết khi thành phần được tạo.
   @override
   void initState() {
     super.initState();
     _load();
   }
 
+  /// Tải dữ liệu nhà cung cấp, nhập kho, kiểm kê và từng xe và cập nhật trạng thái tương ứng.
   Future<void> _load() async {
     try {
       await AppLoading.run(vm.loadUnits);
@@ -741,6 +765,7 @@ class _InventoryUnitsPanelState extends State<InventoryUnitsPanel> {
     }
   }
 
+  /// Tạo mới dữ liệu nhà cung cấp, nhập kho, kiểm kê và từng xe theo thông tin được cung cấp.
   Future<void> _create() async {
     if (products.isEmpty) {
       showInventoryMessage(context, 'Cần tạo SKU trước.');
@@ -836,6 +861,7 @@ class _InventoryUnitsPanelState extends State<InventoryUnitsPanel> {
     }
   }
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) => SectionCard(
     child: Column(

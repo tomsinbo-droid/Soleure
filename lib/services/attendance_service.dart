@@ -1,3 +1,5 @@
+// Công dụng tệp: Chấm công và điều chỉnh giờ làm.
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../core/constants/firebase_collections.dart';
 import '../models/user_role.dart';
@@ -8,6 +10,7 @@ class AttendanceService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final AuthService _authService = AuthService();
 
+  /// Lấy dữ liệu chấm công.
   Future<List<Map<String, dynamic>>> getAttendance() async {
     final uid = await FirestoreDemoGuard.requireRole([
       'admin',
@@ -50,6 +53,7 @@ class AttendanceService {
     return rows;
   }
 
+  /// Thực hiện check-in hoặc check-out cho ca làm hợp lệ.
   Future<void> checkAttendance(bool checkIn) async {
     final uid = await FirestoreDemoGuard.requireRole(['staff']);
     final now = DateTime.now();
@@ -119,6 +123,7 @@ class AttendanceService {
     });
   }
 
+  /// Từ chối hoặc xử lý ca chấm công quá hạn.
   Future<void> rejectStaleAttendance(String id) async {
     final uid = await FirestoreDemoGuard.requireRole(['manager', 'admin']);
     final ref = _db.collection(FirebaseCollections.attendance).doc(id);
@@ -152,6 +157,7 @@ class AttendanceService {
     });
   }
 
+  /// Xem xét và xử lý dữ liệu chấm công.
   Future<void> reviewAttendance(String id, bool approved) async {
     final uid = await FirestoreDemoGuard.requireRole(['manager', 'admin']);
     final ref = _db.collection(FirebaseCollections.attendance).doc(id);
@@ -193,6 +199,7 @@ class AttendanceService {
     });
   }
 
+  /// Gửi yêu cầu chỉnh công.
   Future<void> requestAttendanceCorrection(
     String id,
     DateTime start,
@@ -230,6 +237,7 @@ class AttendanceService {
     });
   }
 
+  /// Lấy các yêu cầu chỉnh công.
   Future<List<Map<String, dynamic>>> getAttendanceCorrections() async {
     final session = await _authService.getCurrentSession();
     final q = _db.collection(FirebaseCollections.attendanceCorrections);
@@ -242,6 +250,7 @@ class AttendanceService {
     return docs.docs.map((d) => {'id': d.id, ...d.data()}).toList();
   }
 
+  /// Xem xét và xử lý yêu cầu chỉnh công.
   Future<void> reviewAttendanceCorrection(String id, bool approved) async {
     final uid = await FirestoreDemoGuard.requireRole(['manager', 'admin']);
     final ref = _db

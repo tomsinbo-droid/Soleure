@@ -1,3 +1,5 @@
+// Công dụng tệp: Điều hướng và phiên làm việc.
+
 import '../models/product.dart';
 import 'notification_view_model.dart';
 import '../models/customer.dart';
@@ -15,13 +17,16 @@ class AppShellViewModel {
   UserRole role = UserRole.admin;
   String selectedRoute = 'dashboard';
 
+  /// Thay đổi vai trò.
   void changeRole(UserRole value) {
     role = value;
     selectedRoute = 'dashboard';
   }
 
+  /// Chọn mục điều hướng hoặc dữ liệu được cung cấp.
   void select(String route) => selectedRoute = route;
 
+  /// Tải thanh công cụ.
   Future<(String, int)> loadTopBar() async {
     final session = await _authService.getCurrentSession();
     await _notifications.load();
@@ -29,6 +34,7 @@ class AppShellViewModel {
     return (session?.displayName ?? 'Nhân viên', count);
   }
 
+  /// Tìm sản phẩm và khách hàng theo từ khóa.
   Future<(List<Product>, List<Customer>)> search(String keyword) async {
     final products = await _productService.getProducts();
     final customers = await _customerService.getCustomers();
@@ -48,17 +54,21 @@ class AppShellViewModel {
     );
   }
 
+  /// Tải thông báo.
   Future<List<Map<String, dynamic>>> loadNotifications() async {
     await _notifications.load();
     return _notifications.notifications;
   }
 
+  /// Đánh dấu thông báo đã đọc.
   Future<void> markNotificationRead(String id) async {
     await _notifications.markRead(id);
   }
 
+  /// Đăng xuất tài khoản hiện tại.
   Future<void> logout() => _authService.logout();
 
+  /// Kiểm tra vai trò hiện tại có được truy cập màn hình hay không.
   bool canAccess(String route) {
     const staffRoutes = {
       'dashboard',

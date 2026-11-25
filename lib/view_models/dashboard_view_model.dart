@@ -1,3 +1,5 @@
+// Công dụng tệp: Tổng quan cửa hàng.
+
 import '../services/staff_service.dart';
 import '../models/finance_report.dart';
 import '../services/report_service.dart';
@@ -55,20 +57,27 @@ class DashboardViewModel {
   List<(String, String, String, String)> tasks = [];
   List<(String, String, String)> activities = [];
 
+  /// Kiểm tra hai thời điểm có cùng ngày hay không.
   bool _sameDay(DateTime a, DateTime b) =>
       a.year == b.year && a.month == b.month && a.day == b.day;
+  /// Kiểm tra hai thời điểm có cùng tháng hay không.
   bool _sameMonth(DateTime a, DateTime b) =>
       a.year == b.year && a.month == b.month;
+  /// Lấy thời điểm tạo từ dữ liệu bản ghi.
   DateTime? _created(Map<String, dynamic> item) =>
       (item['createdAt'] as Timestamp?)?.toDate();
   // QR chỉ được coi là doanh thu từ thời điểm đối soát đã xác nhận.
+  /// Lấy thời điểm bán hàng từ dữ liệu giao dịch.
   DateTime? _saleDate(Map<String, dynamic> item) =>
       ((item['paidAt'] ?? item['createdAt']) as Timestamp?)?.toDate();
+  /// Kiểm tra giao dịch đã được thanh toán hay chưa.
   bool _paid(Map<String, dynamic> item) =>
       ['Paid', 'Refunded'].contains(item['status']);
+  /// Lấy số tiền từ dữ liệu giao dịch.
   double _amount(Map<String, dynamic> item, String key) =>
       (item[key] as num? ?? 0).toDouble();
 
+  /// Tải dữ liệu tổng quan cửa hàng và cập nhật trạng thái tương ứng.
   Future<void> load(UserRole role) async {
     final products = await _productService.getProducts();
     orders = await _posService.getOrders();
@@ -193,6 +202,7 @@ class DashboardViewModel {
     }).toList();
   }
 
+  /// Tạo các chỉ số tổng quan phù hợp với vai trò.
   List<DashboardMetricData> metrics(UserRole role) {
     final today = DateTime.now();
     final todayOrders = orders

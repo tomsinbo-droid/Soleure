@@ -1,3 +1,5 @@
+// Công dụng tệp: Khởi tạo giao diện ứng dụng.
+
 import 'package:flutter/material.dart';
 
 import 'core/theme/app_theme.dart';
@@ -9,6 +11,7 @@ class SoleureApp extends StatelessWidget {
 
   final String? setupError;
 
+  /// Xây dựng giao diện của thành phần từ trạng thái hiện tại.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

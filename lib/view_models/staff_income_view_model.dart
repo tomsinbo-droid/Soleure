@@ -1,3 +1,5 @@
+// Công dụng tệp: Thu nhập cá nhân.
+
 import '../core/constants/app_defaults.dart';
 import '../services/staff_service.dart';
 import '../services/settings_service.dart';
@@ -28,6 +30,7 @@ class StaffIncomeViewModel {
   double get expectedIncome =>
       hourlyIncome + commission - revokedCommission + adjustments;
 
+  /// Tải dữ liệu thu nhập cá nhân và cập nhật trạng thái tương ứng.
   Future<void> load() async {
     final uid = _authService.currentUid;
     hours = 0;
@@ -48,6 +51,7 @@ class StaffIncomeViewModel {
     final attendance = await _attendanceService.getAttendance();
     final commissions = await _payrollService.getCommissionEvents();
     final month = DateTime.now();
+    /// Kiểm tra hai thời điểm có cùng tháng hay không.
     bool sameMonth(DateTime d) =>
         d.year == month.year && d.month == month.month;
     for (final item in attendance) {
